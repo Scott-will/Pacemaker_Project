@@ -74,12 +74,13 @@ class Login_Window:  # Class for the create of the main login window
         self.entry_pass.config(show="*")
         self.entry_pass.place(x=170, y=380)
 
-        # Block for the creation of the checkboxes for the login frame
-        self.check_state_var = IntVar() ##variable to check the state of the checkbox
-        self.checkbutton_remember = Checkbutton(self.frame_root, variable = self.check_state_var)##, command=self.remember_me())
-        self.checkbutton_remember.config(command = self.remember_me())
-        self.checkbutton_remember.place(x=165, y=400)
 
+        # Block for the creation of the checkboxes for the login frame
+        self.check_state_var = IntVar()  ##variable to check the state of the checkbox
+        self.checkbutton_remember = Checkbutton(self.frame_root, variable = self.check_state_var)##, command=self.remember_me())
+        self.checkbutton_remember.config(command = self.remember_me)
+        self.checkbutton_remember.place(x=165, y=400)
+        self.get_old_users()
 
         # Block for the creation of the buttons for the login frame
         self.button_login = Button(self.frame_root, text="Login",command=self.pacing_screen)  # command = self.check_user(self.entry_user.get(), self.entry_pass.get()))
@@ -91,13 +92,9 @@ class Login_Window:  # Class for the create of the main login window
     def remember_me(self): ##function called when remember me box ix checked, saves user to a file
         print(self.check_state_var.get())
         if self.check_state_var.get() == 1:
+            to_dump = [self.entry_user.get(), self.entry_pass.get(), self.check_state_var.get()]
             f = open("Remembered.txt", 'wb')
-            pickle.dump(self.entry_user.get(), f)
-            pickle.dump(self.entry_pass.get(), f)
-            f.close()
-        if self.check_state_var.get() == 0:
-            f = open("Remembered.txt", 'wb')
-            pickle.dump('', f)
+            pickle.dump(to_dump, f)
             f.close()
 
     def pacing_screen(self):  ##calls pacing screen
@@ -108,11 +105,26 @@ class Login_Window:  # Class for the create of the main login window
                 if password == list_of_users[i + 1]:
                     self.frame_root.pack_forget()
                     self.PaceingScren = Pacing_Window(root)
-        Error = Notify_window(6)  ##user does not exist
+                    success = 1
+        if success == 0:
+            Error = Notify_window(6)  ##user does not exist
 
     def new_user_window(self):  # calls new user screen
         self.frame_root.pack_forget()
         self.NewUserWindow = New_User_Window(root)
+
+    def get_old_users(self):
+        f2 = open("Remembered.txt", "rb")
+        while True:
+            try:
+                old_user = pickle.load(f2) #reads old user login info
+            except EOFError:
+                break
+        f2.close()
+        if old_user[2] == 1:
+            self.entry_user.insert(10, old_user[0]) #inserts into user and password entry spot
+            self.entry_pass.insert(10, old_user[1])
+            self.check_state_var.set(1)
 
 
 # This calls is for the window where new users register. This class has the same structure as the login Window class
@@ -160,29 +172,6 @@ class New_User_Window:
         add_user(list_of_users, username, password)
         save_users(list_of_users)
 
-   ## def read_input(self):  # we collect the entered username and password inputted into the entry boxes
-     ##   username = self.entry_username.get()
-       ## password = self.entry_password.get()
-     ##   password_confirm = self.entry_password_confirmation.get()
-
-       ## # Block for error handling in user creation
-##        if username:  # Checks that a username is entered
-  ##          if not password:  # checks that a password is entered
-    ##            Notify_window(2)
-      ##      elif not password_confirm:  # Checks if the confirm password is entered
-        ##        Notify_window(3)
-          ##  elif password != password_confirm:  # Checks that the two passwords match
-      ##          Notify_window(4)
-        ##    elif password == password_confirm: # If the two passwords match then we create the users
-          ##      self.create_user(username, password)
-       ## else:
-         ##   Notify_window(1)
-
-    ##    if username and password and password_confirm and password == password_confirm:  # If there are no errors
-            # Create window to notify users that registration has been completed
-            # and bring users back to login window
-      ##      Notify_window(5)
-        ##    self.from_new_user()
 
 
 class Notify_window():  # Class to warn users of errors various errors or to notify them of a conformation
