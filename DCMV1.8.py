@@ -4,7 +4,11 @@ from winsound import *
 import tkinter as tk
 import pickle
 
+file1 = open("Users.txt", 'w+')
+file1.close()
 
+file2 = open("Remembered.txt", 'w+')
+file2.close()
 def save_users(list_of_users):  ##writing users to file
     f = open("Users.txt", 'wb')
     pickle.dump(list_of_users, f)
@@ -13,16 +17,16 @@ def save_users(list_of_users):  ##writing users to file
 
 def read_users():  # reading saved users from txt file
     f = open("Users.txt", 'rb')
-
+    list_of_users = []
     while True:
         try:
-            list_of_users = (pickle.load(f))  ##reading data from file
+            list_of_users.append(pickle.load(f))  ##reading data from file
         except EOFError:
             break
-    print(list_of_users)
     f.close()
     return list_of_users
-
+list_of_users = read_users()
+print(list_of_users)
 def read_last_login(): ##reading last user saved if remember me is checked
     f2 = open("Remembered.txt", 'rb')
     while True:
@@ -100,6 +104,7 @@ class Login_Window:  # Class for the create of the main login window
     def pacing_screen(self):  ##calls pacing screen
         password = self.entry_pass.get()
         username = self.entry_user.get()
+        success = 0
         for i in range(0, len(list_of_users) - 1, 2): #checks if user exists and password is correct
             if list_of_users[i] == username:
                 if password == list_of_users[i + 1]:
@@ -111,7 +116,7 @@ class Login_Window:  # Class for the create of the main login window
 
     def new_user_window(self):  # calls new user screen
         self.frame_root.pack_forget()
-        self.NewUserWindow = New_User_Window(root)
+        self.NewUserWindow = New_User_Window(root, list_of_users)
 
     def get_old_users(self):
         f2 = open("Remembered.txt", "rb")
@@ -129,10 +134,11 @@ class Login_Window:  # Class for the create of the main login window
 
 # This calls is for the window where new users register. This class has the same structure as the login Window class
 class New_User_Window:
-    def __init__(self, master):
+    def __init__(self, master, list_of_users):
         ##frame definition
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
+        self.list_of_users = list_of_users
 
         #buttons and text defintiions
         self.background_image = tk.PhotoImage(file="backgroundpacing.png")
@@ -159,7 +165,7 @@ class New_User_Window:
 
         self.button_username = Button(self.frame_root, text="Create")
         self.button_username.place(x=200, y=390)
-        self.button_username.config(command=self.read_input)
+        self.button_username.config(command=self.create_user)
         self.button_cancel = Button(self.frame_root, text="Cancel")
         self.button_cancel.config(command=self.from_new_user)
         self.button_cancel.place(x=250, y=390)
@@ -168,9 +174,14 @@ class New_User_Window:
         self.frame_root.pack_forget()
         self.LoginScreen = Login_Window(root)
 
-    def create_user(self, username, password):  # We take the collected username and password and save them
+    def create_user(self):  # We take the collected username and password and save them
+        username = self.entry_username.get()
+        password = self.entry_password.get()
+        list_of_users = self.list_of_users
         add_user(list_of_users, username, password)
         save_users(list_of_users)
+        #print(list_of_users)
+        self.from_new_user()
 
 
 
@@ -384,7 +395,7 @@ class Parameter_Window:
 
 
 
-list_of_users = read_users()
+
 last_login = read_last_login()
 root = Tk() # Created the window where the entire program is run
 
