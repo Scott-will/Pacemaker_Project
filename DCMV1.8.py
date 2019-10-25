@@ -4,34 +4,41 @@ from winsound import *
 import tkinter as tk
 import pickle
 
-file1 = open("Users.txt", 'w+')
+file1 = open("Users.txt", 'r+') ##makes sure files are created if not already existing
 file1.close()
 
-file2 = open("Remembered.txt", 'w+')
+file2 = open("Remembered.txt", 'r+')
 file2.close()
+
+file3 = open("Parameters.txt", 'r+')
+file3.close()
+
 def save_users(list_of_users):  ##writing users to file
-    f = open("Users.txt", 'wb')
+    f = open("Users.txt", 'wb') #opens file then dumps users into file
     pickle.dump(list_of_users, f)
     f.close()
 
 
 def read_users():  # reading saved users from txt file
-    f = open("Users.txt", 'rb')
-    list_of_users = []
+    f = open("Users.txt", 'rb') #opens file
+    list_of_users = 0
     while True:
         try:
-            list_of_users.append(pickle.load(f))  ##reading data from file
+            list_of_users = pickle.load(f)  ##reading data from file if not end of file
         except EOFError:
             break
     f.close()
     return list_of_users
-list_of_users = read_users()
+
+list_of_users = read_users() ##get our list of users
 print(list_of_users)
+
 def read_last_login(): ##reading last user saved if remember me is checked
-    f2 = open("Remembered.txt", 'rb')
+    f2 = open("Remembered.txt", 'rb') ##opens file
+    last_login = 0
     while True:
         try:
-            last_login = (pickle.load(f2))
+            last_login = pickle.load(f2) ##reads file while not end of file
         except EOFError:
             break
     print(last_login)
@@ -41,7 +48,7 @@ def read_last_login(): ##reading last user saved if remember me is checked
 def add_user(list_of_users, username, password): ##adding a user
     if len(list_of_users) < 20: ##check if not max number of users
         list_of_users.append(username)
-        list_of_users.append(password)
+        list_of_users.append(password) #append login info
         print(list_of_users)
     else:
         Notify_window(7) ##error window
@@ -84,7 +91,7 @@ class Login_Window:  # Class for the create of the main login window
         self.checkbutton_remember = Checkbutton(self.frame_root, variable = self.check_state_var)##, command=self.remember_me())
         self.checkbutton_remember.config(command = self.remember_me)
         self.checkbutton_remember.place(x=165, y=400)
-        self.get_old_users()
+        self.get_old_users() ##gets old user login info if remember me is checked,
 
         # Block for the creation of the buttons for the login frame
         self.button_login = Button(self.frame_root, text="Login",command=self.pacing_screen)  # command = self.check_user(self.entry_user.get(), self.entry_pass.get()))
@@ -95,16 +102,16 @@ class Login_Window:  # Class for the create of the main login window
 
     def remember_me(self): ##function called when remember me box ix checked, saves user to a file
         print(self.check_state_var.get())
-        if self.check_state_var.get() == 1:
+        if self.check_state_var.get() == 1: ##checks if remember me is checked adds info to dump to file
             to_dump = [self.entry_user.get(), self.entry_pass.get(), self.check_state_var.get()]
             f = open("Remembered.txt", 'wb')
-            pickle.dump(to_dump, f)
+            pickle.dump(to_dump, f) ##dumps info
             f.close()
 
     def pacing_screen(self):  ##calls pacing screen
         password = self.entry_pass.get()
         username = self.entry_user.get()
-        success = 0
+        success = 0 ##variable to check if need to call error window
         for i in range(0, len(list_of_users) - 1, 2): #checks if user exists and password is correct
             if list_of_users[i] == username:
                 if password == list_of_users[i + 1]:
@@ -120,17 +127,20 @@ class Login_Window:  # Class for the create of the main login window
 
     def get_old_users(self):
         f2 = open("Remembered.txt", "rb")
+        old_user = 0 ##
         while True:
             try:
-                old_user = pickle.load(f2) #reads old user login info
+                old_user = (pickle.load(f2)) #reads old user login info while not end of file
             except EOFError:
                 break
         f2.close()
-        if old_user[2] == 1:
-            self.entry_user.insert(10, old_user[0]) #inserts into user and password entry spot
-            self.entry_pass.insert(10, old_user[1])
-            self.check_state_var.set(1)
-
+        try:
+            if old_user[2] == 1: ##checks if remembered me is checked
+                self.entry_user.insert(10, old_user[0]) #inserts into user and password entry spot
+                self.entry_pass.insert(10, old_user[1])
+                self.check_state_var.set(1)
+        except IndexError:
+            pass ##does nothing
 
 # This calls is for the window where new users register. This class has the same structure as the login Window class
 class New_User_Window:
@@ -181,7 +191,7 @@ class New_User_Window:
         add_user(list_of_users, username, password)
         save_users(list_of_users)
         #print(list_of_users)
-        self.from_new_user()
+        self.from_new_user() ##goes back to login screen
 
 
 
