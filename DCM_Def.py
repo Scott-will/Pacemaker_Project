@@ -4,12 +4,26 @@ from winsound import *
 import tkinter as tk
 import pickle
 
+## Pulse width lower  = 1, upper  = 10?
+## amplitude lower = 30?, upper = 80?
+##sensitivity lower = 50, upper = 70 for duty cycles
+## fixed delay, lower = 70, upper  =  300
+
+## from A00 to DDDR
+##values to pass to board for each mode:
+#0 = voo, 1 = Aoo, 2 = vvi. 3 = aai, 4= doo, 5 = Aoor, 6 =  air, 7 = voor, 8 = vvir, 9 = door 10 = dddr
+#need to drop remember me
+#need to implement private variables
+#need thing to show that board is communicating
+##
 
 def save_users(list_of_users):  ##writing users to file
     f = open("Users.txt", 'wb')  # opens file then dumps users into file
     pickle.dump(list_of_users, f)
     f.close()
     list_of_users = read_users()
+    print(list_of_users)
+    print("su")
     return list_of_users
 
 
@@ -41,7 +55,6 @@ def read_last_login():  ##reading last user saved if remember me is checked
                 last_login = pickle.load(f2)  ##reads file while not end of file
             except EOFError:
                 break
-        print(last_login)
         f2.close()
     except IOError:
         f2 = open("Remembered.txt", 'w+')
@@ -59,10 +72,9 @@ def add_user(list_of_users, username, password):  ##adding a user
                     not_found = False
                     Notify_window(1)
                     break
-            if not_found:
+            if not_found == True: ##ERRROR IS SOMEWHERE HERE
                 list_of_users.append(username)
                 list_of_users.append(password)  # append login info
-                print(list_of_users)
         else:
             Notify_window(7)  ##error window
     except TypeError:
@@ -70,7 +82,7 @@ def add_user(list_of_users, username, password):  ##adding a user
         list_of_users.append(username)
         list_of_users.append(password)
         print(list_of_users)
-        print("^^^")
+        print("au")
     return list_of_users
 
 
@@ -122,7 +134,6 @@ class Login_Window:  # Class for the create of the main login window
         self.button_create.place(x=235, y=425)
 
     def remember_me(self):  ##function called when remember me box ix checked, saves user to a file
-        print(self.check_state_var.get())
         if self.check_state_var.get() == 1:  ##checks if remember me is checked adds info to dump to file
             to_dump = [self.entry_user.get(), self.entry_pass.get(), self.check_state_var.get()]
             f = open("Remembered.txt", 'wb')
@@ -138,7 +149,6 @@ class Login_Window:  # Class for the create of the main login window
         password = self.entry_pass.get()
         username = self.entry_user.get()
         list_of_users = read_users()
-        print(list_of_users)
         success = 0  ##variable to check if need to call error window
         try:
             for i in range(0, len(list_of_users) - 1, 2):  # checks if user exists and password is correct
@@ -158,7 +168,7 @@ class Login_Window:  # Class for the create of the main login window
 
     def get_old_users(self):
         try:
-            old_user = 0
+            old_user = []
             f2 = open("Remembered.txt", "rb")
             while True:
                 try:
@@ -177,7 +187,7 @@ class Login_Window:  # Class for the create of the main login window
                 old_user = []  ##does nothing
         except IOError:
             f2 = open("Remembered.txt", 'w+')
-            old_user = 0
+            old_user = []
             f2.close()
 
 
@@ -189,8 +199,6 @@ class New_User_Window:
         self.frame_root.pack()
         self.list_of_users = list_of_users
         self.master = master
-        print(self.list_of_users)
-        print(list_of_users)
 
         # buttons and text defintiions
         self.background_image = tk.PhotoImage(file="backgroundpacing.png")
@@ -230,18 +238,34 @@ class New_User_Window:
         username = self.entry_username.get()
         password = self.entry_password.get()
         password_confirm = self.entry_password_confirmation.get()
-        if password == password_confirm:
-            self.list_of_users = add_user(self.list_of_users, username, password)
-            list_of_users = save_users(self.list_of_users)
-            print(list_of_users)
-            self.from_new_user()  ##goes back to login screen
+        isnumber_username = False
+        isnumber_password = False
+
+        if len(username) > 5:
+            for i in username:
+                if i.isdigit():
+                    isnumber_username = True
+            if len(password) > 5:
+                for i in username:
+                    if i.isdigit():
+                        isnumber_password = True
+
+        if isnumber_username and isnumber_password:
+            if password == password_confirm:
+                self.list_of_users = add_user(self.list_of_users, username, password)
+                list_of_users = save_users(self.list_of_users)
+                print(list_of_users)
+                self.from_new_user()  ##goes back to login screen
+            else:
+                error = Notify_window(4)
         else:
-            error = Notify_window(4)
+            Notify_window(3)
 
 
 class Notify_window():  # Class to warn users of errors various errors or to notify them of a conformation
     # If you want to add more errors or conformations, start a new block of if and elif cases
     # Use this class for any notifications that require a separate window
+    ## need a window to: show file writing was success && paramaters saved, user added,
     def __init__(self, error):
         winsound.PlaySound("sound.wav", winsound.SND_ASYNC)  # Basic windows error sound to notify users
         box = Tk()  # Creating a separate tk window for the errors
@@ -256,13 +280,13 @@ class Notify_window():  # Class to warn users of errors various errors or to not
             error1_label = Label(box, text="Username already exists")
             error1_label.place(x=80, y=20)
 
-        elif error == 2:  # For no password entered in register
-            error2_label = Label(box, text="Please enter a password")
+        elif error == 2:  # For after save/apply is pressed
+            error2_label = Label(box, text="Parameters successfully updated")
             error2_label.place(x=80, y=20)
 
         elif error == 3:  # For no confirm password in register
-            error3_label = Label(box, text="Please confirm your password")
-            error3_label.place(x=80, y=20)
+            error3_label = Label(box, text="Username/Password must have at least\n5 characters and contain a number")
+            error3_label.place(x=55, y=20)
 
         elif error == 4:  # For non matching passwords entered in register
             error4_label = Label(box, text="Passwords do not match")
@@ -271,13 +295,18 @@ class Notify_window():  # Class to warn users of errors various errors or to not
         elif error == 5:  # For successful creation of new user
             created_label = Label(box, text="Registration confrimed!")
             created_label.place(x=80, y=20)
+
         elif error == 6:
             error6_label = Label(box, text="Username or Password is incorrect")
             error6_label.place(x=80, y=20)
+
         elif error == 7:
             error7_label = Label(box, text="There are already 10 users")
             error7_label.place(x=80, y=20)
 
+        elif error == 8:
+            error7_label = Label(box, text="Invalid Parameter")
+            error7_label.place(x=80, y=20)
 
 # Class for the pacing window screen, again this follows the basic structure as the other classes for frame creation
 class Pacing_Window:
@@ -351,9 +380,6 @@ class Parameter_Window:
         self.master = master
 
         self.parameters = self.old_parameters()
-        print(self.parameters)
-
-        # self.old_parameters()
 
         self.background_image = tk.PhotoImage(file="backgroundpacing2.png")
         self.label = Label(self.frame_root, image=self.background_image)
@@ -503,6 +529,7 @@ class Parameter_Window:
             self.label_title2.place(x=650, y=130)
             self.write_parameters()
 
+
         elif self.mode == 3:
             self.label_title3 = Label(self.frame_root, text="AAI Pacing Mode")
             self.label_title3.config(font=("Courier", 15))
@@ -520,8 +547,6 @@ class Parameter_Window:
         self.PacingWindow = Pacing_Window(self.master, self.user)
 
     def Apply(self):  # Apply will save the #parameters in the entry fields and return to the pacing screen
-        print(self.parameters)
-        # print(self.old_parameters)
         self.frame_root.pack_forget()
         self.PacingWindow = Pacing_Window(self.master, self.user)
         # Add code here to also save the parameters
@@ -627,7 +652,14 @@ class Parameter_Window:
                 self.parameters.append(self.entry_Recv_Time.get())
                 self.parameters.append(self.mode)
                 break
-        pickle.dump(self.parameters, f)
+        all_numbers = True
+        for i in range(0, len(self.parameters) - 1):
+            if self.parameters[i].isdigit() == False:
+                all_numbers = False
+        if all_numbers:
+            pickle.dump(self.parameters, f)
+        else:
+            Notify_window(8)
         f.close()
 
     def old_parameters(self):  ##gets the old parameters
@@ -690,5 +722,5 @@ class Parameter_Window:
 
 ################################################################
 
-list_of_users = read_users
+list_of_users = read_users()
 last_login = read_last_login()
