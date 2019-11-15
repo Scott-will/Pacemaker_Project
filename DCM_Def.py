@@ -11,12 +11,25 @@ import pickle
 
 ## from A00 to DDDR
 ##values to pass to board for each mode:
-#0 = voo, 1 = Aoo, 2 = vvi. 3 = aai, 4= doo, 5 = Aoor, 6 =  air, 7 = voor, 8 = vvir, 9 = door 10 = dddr
+#0 = voo (5), 1 = Aoo (5), 2 = vvi (8), 3 = aai (9), 4= doo (7), 5 = Aoor (9), 6 =  aair (14), 7 = voor (9), 8 = vvir (13), 9 = door (12), 10 = dddr (25)
 #need to drop remember me
 #need to implement private variables
 #need thing to show that board is communicating
 ##
 
+### New File Structure:
+# has 10 users, each with designated locations for all the modes
+# has locations for username and password
+# Username, password, mode 1: all parameters, mode 2: all parameters.... Next username... Final Username, password & parameters
+
+## serial stuff
+## send 1 pack for mode and paramter, another pack for the value of parameter
+##for eegram either cont read the port and plot or if they send 1 giant chunk display that
+### to check, they can send the data back to us and we can make sure it was the same thing we sent
+##
+
+##array Size, Username (10), password (10), 11 modes, 5 + 5+ 8 + 9 + 7 + 9 + 14 + 9 + 13 +  12 + 25
+## 116 parameters/user locations in array
 def save_users(list_of_users):  ##writing users to file
     f = open("Users.txt", 'wb')  # opens file then dumps users into file
     pickle.dump(list_of_users, f)
@@ -72,7 +85,7 @@ def add_user(list_of_users, username, password):  ##adding a user
                     not_found = False
                     Notify_window(1)
                     break
-            if not_found == True: ##ERRROR IS SOMEWHERE HERE
+            if not_found == True:
                 list_of_users.append(username)
                 list_of_users.append(password)  # append login info
         else:
@@ -596,7 +609,7 @@ class Parameter_Window:
                     break
                 else:
                     i = i + 26
-            except EOFError:  ##if user not found add them and their data
+            except EOFError or IndexError:  ##if user not found add them and their data
                 self.parameters.append(self.user)
                 self.parameters.append(self.entry_Upperlim.get())
                 self.parameters.append(self.entry_Lowerlim.get())
@@ -624,32 +637,57 @@ class Parameter_Window:
                 self.parameters.append(self.entry_Recv_Time.get())
                 self.parameters.append(self.mode)
                 break
-            except IndexError:
+            except IndexError: ##here we have the parameters and there bounds, just copy the if statement into the proper location,
+                ## make sure each screen only shows the ones it needs for the desired mode
                 self.parameters.append(self.user)
-                self.parameters.append(self.entry_Upperlim.get())
-                self.parameters.append(self.entry_Lowerlim.get())
-                self.parameters.append(self.entry_Sensor_Rate.get())
-                self.parameters.append(self.entry_AV_Delay.get())
-                self.parameters.append(self.entry_Dyn_AV_Delay.get())
-                self.parameters.append(self.entry_AV_Delay_Off1.get())
-                self.parameters.append(self.entry_Atr_Amp.get())
-                self.parameters.append(self.entry_Vent_Amp.get())
-                self.parameters.append(self.entry_Atr_Pulse.get())
-                self.parameters.append(self.entry_Vent_Pulse.get())
-                self.parameters.append(self.entry_Vent_Sens.get())
-                self.parameters.append(self.entry_Atr_Sens.get())
-                self.parameters.append(self.entry_VRP.get())
-                self.parameters.append(self.entry_ARP.get())
-                self.parameters.append(self.entry_PVARP.get())
-                self.parameters.append(self.entry_PVARP_Ext.get())
-                self.parameters.append(self.entry_Hyst.get())
-                self.parameters.append(self.entry_Rate_Smooth.get())
-                self.parameters.append(self.entry_ATR_Dur.get())
-                self.parameters.append(self.entry_ATR_Fallback_Mode.get())
-                self.parameters.append(self.entry_Act_Thres.get())
-                self.parameters.append(self.entry_React_Time.get())
-                self.parameters.append(self.entry_Resp_Fact.get())
-                self.parameters.append(self.entry_Recv_Time.get())
+                if int(self.entry_Upperlim.get()) < 100 and int(self.entry_Upperlim.get()) > int(self.entry_Lowerlim.get()):
+                    self.parameters.append(self.entry_Upperlim.get())
+                if int(self.entry_Lowerlim.get()) < int(self.entry_Upperlim.get()) and int(self.entry_Lowerlim.get()) >= 60:
+                    self.parameters.append(self.entry_Lowerlim.get())
+                #if int(self.entry_Sensor_Rate.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_Sensor_Rate.get()) ##sensor rate range between TBD
+                if int(self.entry_AV_Delay.get()) <= 300 and int(self.entry_AV_Delay.get()) >= 150:
+                    self.parameters.append(self.entry_AV_Delay.get()) ## between 150 - 300 ms
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_Dyn_AV_Delay.get()) ## TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_AV_Delay_Off1.get()) ## TBD
+                if int(self.entry_Atr_Amp.get()) <= 80 and int(self.entry_Atr_Amp.get()) >= 30:
+                    self.parameters.append(self.entry_Atr_Amp.get()) ## between 30 - 80
+                if int(self.entry_Vent_Amp.get()) <= 80 and int(self.entry_Vent_Amp.get()) >= 30:
+                    self.parameters.append(self.entry_Vent_Amp.get()) ## same as atr
+                if int(self.entry_Atr_Pulse.get()) <= 10 and int(self.entry_Atr_Pulse.get()) >= 1:
+                    self.parameters.append(self.entry_Atr_Pulse.get()) ## 1 - 10
+                if int(self.entry_Vent_Pulse.get()) <= 10 and int(self.entry_Vent_Pulse.get()) >= 1:
+                    self.parameters.append(self.entry_Vent_Pulse.get()) ## 1 - 10
+               # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                #    self.parameters.append(self.entry_Vent_Sens.get()) ## between TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_Atr_Sens.get()) ## between TBD
+                if int(self.entry_VRP.get()) <= 300 and int(self.entry_VRP.get()) >= 150:
+                    self.parameters.append(self.entry_VRP.get()) ## between 150 - 300ms
+                if int(self.entry_ARP.get()) <= 300 and int(self.entry_ARP.get()) >= 150:
+                    self.parameters.append(self.entry_ARP.get()) ## 150  - 300
+                if int(self.entry_PVARP.get()) <= 300 and int(self.entry_PVARP.get()) >= 150:
+                    self.parameters.append(self.entry_PVARP.get()) ## 150 - 300
+                if int(self.entry_PVARP_Ext.get()) <= 300 and int(self.entry_PVARP_Ext.get()) >= 150:
+                    self.parameters.append(self.entry_PVARP_Ext.get()) ## 150 - 300 (TBD)
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_Hyst.get()) ## baked into the board, not needed
+               # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                #    self.parameters.append(self.entry_Rate_Smooth.get()) ## TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_ATR_Dur.get())    ## TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_ATR_Fallback_Mode.get())  ## TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_Act_Thres.get()) ## TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_React_Time.get()) ## TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_Resp_Fact.get()) ## TBD
+                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
+                 #   self.parameters.append(self.entry_Recv_Time.get()) ## TBD
                 self.parameters.append(self.mode)
                 break
         all_numbers = True
