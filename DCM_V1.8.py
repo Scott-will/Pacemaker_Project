@@ -5,31 +5,64 @@ import tkinter as tk
 import pickle
 
 
-def save_users(list_of_users):  ##writing to file
-    f = open("Users.txt", 'wb')
+def save_users(list_of_users):  ##writing users to file
+    f = open("Users.txt", 'wb') #opens file then dumps users into file
     pickle.dump(list_of_users, f)
     f.close()
 
 
+
+
 def read_users():  # reading saved users from txt file
-    f = open("Users.txt", 'rb')
-    while True:
-        try:
-            list_of_users = (pickle.load(f))  ##reading data from file
-        except EOFError:
-            break
-    print(list_of_users)  ##need a loop here to store user info in list of users
-    f.close()
+    try:
+        f = open("Users.txt", 'rb') #opens file
+        list_of_users = 0
+        while True:
+            try:
+                list_of_users = pickle.load(f)  ##reading data from file if not end of file
+            except EOFError:
+                break
+        f.close()
+    except IOError:
+        f = open("Users.txt", 'w+')
+        list_of_users = 0
+        f.close()
     return list_of_users
 
+list_of_users = read_users() ##get our list of users
+print(list_of_users)
 
-def add_user(list_of_users, username, password):
-    if len(list_of_users) < 20:
+def read_last_login(): ##reading last user saved if remember me is checked
+    try:
+        f2 = open("Remembered.txt", 'rb') ##opens file
+        last_login = 0
+        while True:
+            try:
+                last_login = pickle.load(f2) ##reads file while not end of file
+            except EOFError:
+                break
+        print(last_login)
+        f2.close()
+    except IOError:
+        f2 = open("Remembered.txt", 'w+')
+        last_login = 0
+        f2.close()
+
+    return last_login
+
+def add_user(list_of_users, username, password): ##adding a user
+    try:
+        if len(list_of_users) < 20: ##check if not max number of users
+            list_of_users.append(username)
+            list_of_users.append(password) #append login info
+            print(list_of_users)
+        else:
+            Notify_window(7) ##error window
+    except TypeError:
+        list_of_users = []
         list_of_users.append(username)
         list_of_users.append(password)
-        print(list_of_users)
-    else:
-        Notify_window(7)
+
 
 
 class Login_Window:  # Class for the create of the main login window
@@ -62,42 +95,83 @@ class Login_Window:  # Class for the create of the main login window
         self.entry_pass.config(show="*")
         self.entry_pass.place(x=170, y=380)
 
+
         # Block for the creation of the checkboxes for the login frame
-        self.checkbutton_remember = Checkbutton(self.frame_root)
+        self.check_state_var = IntVar()  ##variable to check the state of the checkbox
+        self.checkbutton_remember = Checkbutton(self.frame_root, variable = self.check_state_var)##, command=self.remember_me())
+        self.checkbutton_remember.config(command = self.remember_me)
         self.checkbutton_remember.place(x=165, y=400)
+        self.get_old_users() ##gets old user login info if remember me is checked,
 
         # Block for the creation of the buttons for the login frame
         self.button_login = Button(self.frame_root, text="Login",command=self.pacing_screen)  # command = self.check_user(self.entry_user.get(), self.entry_pass.get()))
         self.button_login.place(x=170, y=425)
-        self.button_login.config(command=self.check_user(self.entry_user.get(), self.entry_pass.get()))
+        #self.button_login.config(command=self.check_user(self.entry_user.get(), self.entry_pass.get()))
         self.button_create = Button(self.frame_root, text="New User", command=self.new_user_window)
         self.button_create.place(x=235, y=425)
 
-    def check_user(self, username, password):  # checks if user exists
-        print('')
+    def remember_me(self): ##function called when remember me box ix checked, saves user to a file
+        print(self.check_state_var.get())
+        if self.check_state_var.get() == 1: ##checks if remember me is checked adds info to dump to file
+            to_dump = [self.entry_user.get(), self.entry_pass.get(), self.check_state_var.get()]
+            f = open("Remembered.txt", 'wb')
+            pickle.dump(to_dump, f) ##dumps info
+            f.close()
 
     def pacing_screen(self):  ##calls pacing screen
         password = self.entry_pass.get()
         username = self.entry_user.get()
-        print(len(list_of_users))
-        for i in range(0, len(list_of_users) - 1, 2):
-            if list_of_users[i] == username:
-                if password == list_of_users[i + 1]:
-                    self.frame_root.pack_forget()
-                    self.PaceingScren = Pacing_Window(root)
-        Error = Notify_window(6)  ##user does not exist
+        list_of_users = read_users()
+        success = 0 ##variable to check if need to call error window
+        try:
+            for i in range(0, len(list_of_users) - 1, 2): #checks if user exists and password is correct
+                if list_of_users[i] == username:
+                    if password == list_of_users[i + 1]:
+                        self.frame_root.pack_forget()
+                        self.PacingScreen = Pacing_Window(root, username)
+                        success = 1
+        except TypeError:
+            pass
+        if success == 0:
+            Error = Notify_window(6)  ##user does not exist
 
     def new_user_window(self):  # calls new user screen
         self.frame_root.pack_forget()
-        self.NewUserWindow = New_User_Window(root)
+        self.NewUserWindow = New_User_Window(root, list_of_users)
 
+    def get_old_users(self):
+        try:
+            f2 = open("Remembered.txt", "rb")
+            old_user = 0 ##
+            while True:
+                try:
+                    old_user = (pickle.load(f2)) #reads old user login info while not end of file
+                except EOFError:
+                    break
+            f2.close()
+            try:
+               if old_user[2] == 1: ##checks if remembered me is checked
+                    self.entry_user.insert(10, old_user[0]) #inserts into user and password entry spot
+                    self.entry_pass.insert(10, old_user[1])
+                    self.check_state_var.set(1)
+            except IndexError:
+                pass
+            except TypeError:
+                pass ##does nothing
+        except IOError:
+            f2 = open("Remembered.txt", 'w+')
+            old_user = 0
+            f2.close()
 
 # This calls is for the window where new users register. This class has the same structure as the login Window class
 class New_User_Window:
-    def __init__(self, master):
+    def __init__(self, master, list_of_users):
+        ##frame definition
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
+        self.list_of_users = list_of_users
 
+        #buttons and text defintiions
         self.background_image = tk.PhotoImage(file="backgroundpacing.png")
         self.label = Label(self.frame_root, image=self.background_image)
         self.label.image = self.background_image
@@ -122,7 +196,7 @@ class New_User_Window:
 
         self.button_username = Button(self.frame_root, text="Create")
         self.button_username.place(x=200, y=390)
-        self.button_username.config(command=self.read_input)
+        self.button_username.config(command=self.create_user)
         self.button_cancel = Button(self.frame_root, text="Cancel")
         self.button_cancel.config(command=self.from_new_user)
         self.button_cancel.place(x=250, y=390)
@@ -131,33 +205,19 @@ class New_User_Window:
         self.frame_root.pack_forget()
         self.LoginScreen = Login_Window(root)
 
-    def create_user(self, username, password):  # We take the collected username and password and save them
-        add_user(list_of_users, username, password)
-        save_users(list_of_users)
-
-    def read_input(self):  # we collect the entered username and password inputted into the entry boxes
+    def create_user(self):  # We take the collected username and password and save them
         username = self.entry_username.get()
         password = self.entry_password.get()
         password_confirm = self.entry_password_confirmation.get()
-
-        # Block for error handling in user creation
-        if username:  # Checks that a username is entered
-            if not password:  # checks that a password is entered
-                Notify_window(2)
-            elif not password_confirm:  # Checks if the confirm password is entered
-                Notify_window(3)
-            elif password != password_confirm:  # Checks that the two passwords match
-                Notify_window(4)
-            elif password == password_confirm: # If the two passwords match then we create the users
-                self.create_user(username, password)
+        list_of_users = self.list_of_users
+        if password == password_confirm:
+            add_user(list_of_users, username, password)
+            save_users(list_of_users)
+            print(list_of_users)
+            self.from_new_user() ##goes back to login screen
         else:
-            Notify_window(1)
+            error = Notify_window(4)
 
-        if username and password and password_confirm and password == password_confirm:  # If there are no errors
-            # Create window to notify users that registration has been completed
-            # and bring users back to login window
-            Notify_window(5)
-            self.from_new_user()
 
 
 class Notify_window():  # Class to warn users of errors various errors or to notify them of a conformation
@@ -201,7 +261,7 @@ class Notify_window():  # Class to warn users of errors various errors or to not
 
 # Class for the pacing window screen, again this follows the basic structure as the other classes for frame creation
 class Pacing_Window:
-    def __init__(self, master):
+    def __init__(self, master, user):
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
         self.background_image = tk.PhotoImage(file="backgroundpacing.png")
@@ -211,6 +271,7 @@ class Pacing_Window:
         self.text = Label(self.frame_root, text="Please select a Pacing mode")
         self.text.config(font=("Courier", 15))
         self.text.place(x=95, y=150)
+        self.user = user
 
         self.signout_image = tk.PhotoImage(file="signout.png")
         self.button_signout = Button(self.frame_root, image=self.signout_image)
@@ -244,7 +305,7 @@ class Pacing_Window:
     # These 4 methods will display the appropriate texts depending on which mode was pressed on the pacing screen
     def To_Parameters1(self):
         self.frame_root.pack_forget()
-        self.ParameterWindow = Parameter_Window(root, 1)
+        self.ParameterWindow = Parameter_Window(root, 1, self.user)
 
     def To_Parameters2(self):
         self.frame_root.pack_forget()
@@ -260,9 +321,16 @@ class Pacing_Window:
 
 # Class for the frame where the parameters are edited
 class Parameter_Window:
-    def __init__(self, master, mode):
+    def __init__(self, master, mode, user):
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
+        self.mode = mode
+        self.user = user
+
+        self.parameters = []
+        self.old_parameters = self.old_parameters()
+        print(self.old_parameters)
+        #self.old_parameters()
 
         self.background_image = tk.PhotoImage(file="backgroundpacing.png")
         self.label = Label(self.frame_root, image=self.background_image)
@@ -302,22 +370,22 @@ class Parameter_Window:
 
         # The following 4 modes will display the correct set of titles depending on which pacing mode the user want to
         # edit
-        if mode == 1:
+        if self.mode == 1:
             self.label_title1 = Label(self.frame_root, text="VVI Pacing Mode")
             self.label_title1.config(font=("Courier", 15))
             self.label_title1.place(x=160, y=150)
 
-        elif mode == 2:
+        elif self.mode == 2:
             self.label_title2 = Label(self.frame_root, text="AAO Pacing Mode")
             self.label_title2.config(font=("Courier", 15))
             self.label_title2.place(x=160, y=150)
 
-        elif mode == 3:
+        elif self.mode == 3:
             self.label_title3 = Label(self.frame_root, text="AAI Pacing Mode")
             self.label_title3.config(font=("Courier", 15))
             self.label_title3.place(x=160, y=150)
 
-        elif mode == 4:
+        elif self.mode == 4:
             self.label_title4 = Label(self.frame_root, text="VOO Pacing Mode")
             self.label_title4.config(font=("Courier", 15))
             self.label_title4.place(x=160, y=150)
@@ -327,16 +395,67 @@ class Parameter_Window:
         self.PacingWindow = Pacing_Window(root)
 
     def Apply(self):  # Apply will save the parameters in the entry fields and return to the pacing screen
+        self.save_parameters()
+        print(self.parameters)
+        print(self.old_parameters)
         self.frame_root.pack_forget()
         self.PacingWindow = Pacing_Window(root)
         # Add code here to also save the parameters
 
     def Ok(self):  # Ok will only save the parameters in the entry fields
-        x = 1  # Just random code so pycharm doesnt freak out that there is nothing in the function
+        self.save_parameters()  # Just random code so pycharm doesnt freak out that there is nothing in the function
         # add code here to save the parameters
 
+    def save_parameters(self): ##saves parameters
+        f = open("Parameters.txt", 'wb')
+        ##check if file is empty,
+        ##order is user, ul, ll, d, w, mode
+        ##so search file to see if user exists (icrement by 6 6)
+        ##if yes change data
+        ##if no add user and data
+        i = 0
+        while True:
+            try:
+                if f[i] == self.user: ##if user already has parameters, change them
+                    self.parameters[i+1] = self.entry_Upperlim.get()
+                    self.parameters[i + 2] = self.entry_Lowerlim.get()
+                    self.parameters[i + 3] = self.entry_Delay.get()
+                    self.parameters[i + 4] = self.entry_Width.get()
+                    self.parameters[i + 5] = self.mode
+                else:
+                    i = i + 6
+            except EOFError: ##if user not found add them and their data
+                self.parameters.append(self.user)
+                self.parameters.append(self.entry_Upperlim.get())
+                self.parameters.append(self.entry_Lowerlim.get())
+                self.parameters.append(self.entry_Delay.get())
+                self.parameters.append(self.entry_Width.get())
+                self.parameters.append(self.mode)
+        #for i in range(0, 5):
+        pickle.dump(self.parameters, f)
+        f.close()
 
-list_of_users = read_users()
+    def old_parameters(self): ##gets the old parameters
+        try:
+            f2 = open("Parameters.txt", 'rb')
+            #while True:
+
+            #for i in range(0, 5):    #try:
+            old_parameters = pickle.load(f2)
+                #except EOFError:
+                #    break
+            f2.close()
+        except IOError:
+            f2 = open("Parameters.txt", 'w+')
+            old_parameters = 0
+            f2.close()
+        return old_parameters
+
+
+################################################################
+
+
+last_login = read_last_login()
 root = Tk() # Created the window where the entire program is run
 
 # This make it so the users cannot adjust the side of the window, we do this because expanding

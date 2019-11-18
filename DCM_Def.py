@@ -1,35 +1,24 @@
+#################################
+# Import classes as needed      #
+# Class list:                   #
+# import winsound               #
+# from tkinter import *         #
+# import tkinter as tk          #
+# import pickle                 #
+# import Login_Screen           #
+# import New_User_Screen        #
+# import Menu_Window            #
+# import Parameter_Window       #
+# import Pacing_Screen          #
+# import EGram_Window           #
+# import Notify_Window          #
+#################################
 import winsound
 from tkinter import *
-from winsound import *
 import tkinter as tk
 import pickle
 
-## Pulse width lower  = 1, upper  = 10?
-## amplitude lower = 30?, upper = 80?
-##sensitivity lower = 50, upper = 70 for duty cycles
-## fixed delay, lower = 70, upper  =  300
 
-## from A00 to DDDR
-##values to pass to board for each mode:
-#0 = voo (5), 1 = Aoo (5), 2 = vvi (8), 3 = aai (9), 4= doo (7), 5 = Aoor (9), 6 =  aair (14), 7 = voor (9), 8 = vvir (13), 9 = door (12), 10 = dddr (25)
-#need to drop remember me
-#need to implement private variables
-#need thing to show that board is communicating
-##
-
-### New File Structure:
-# has 10 users, each with designated locations for all the modes
-# has locations for username and password
-# Username, password, mode 1: all parameters, mode 2: all parameters.... Next username... Final Username, password & parameters
-
-## serial stuff
-## send 1 pack for mode and paramter, another pack for the value of parameter
-##for eegram either cont read the port and plot or if they send 1 giant chunk display that
-### to check, they can send the data back to us and we can make sure it was the same thing we sent
-##
-
-##array Size, Username (10), password (10), 11 modes, 5 + 5+ 8 + 9 + 7 + 9 + 14 + 9 + 13 +  12 + 25
-## 116 parameters/user locations in array
 def save_users(list_of_users):  ##writing users to file
     f = open("Users.txt", 'wb')  # opens file then dumps users into file
     pickle.dump(list_of_users, f)
@@ -56,9 +45,6 @@ def read_users():  # reading saved users from txt file
     return list_of_users
 
 
-
-
-
 def read_last_login():  ##reading last user saved if remember me is checked
     last_login = []
     try:
@@ -80,12 +66,12 @@ def add_user(list_of_users, username, password):  ##adding a user
     try:
         if len(list_of_users) < 20:  ##check if not max number of users
             not_found = True
-            for i in range (0, len(list_of_users) - 1, 2):
+            for i in range(0, len(list_of_users) - 1, 2):
                 if username == list_of_users[i]:
                     not_found = False
                     Notify_window(1)
                     break
-            if not_found == True:
+            if not_found == True:  ##ERRROR IS SOMEWHERE HERE
                 list_of_users.append(username)
                 list_of_users.append(password)  # append login info
         else:
@@ -251,34 +237,18 @@ class New_User_Window:
         username = self.entry_username.get()
         password = self.entry_password.get()
         password_confirm = self.entry_password_confirmation.get()
-        isnumber_username = False
-        isnumber_password = False
-
-        if len(username) > 5:
-            for i in username:
-                if i.isdigit():
-                    isnumber_username = True
-            if len(password) > 5:
-                for i in username:
-                    if i.isdigit():
-                        isnumber_password = True
-
-        if isnumber_username and isnumber_password:
-            if password == password_confirm:
-                self.list_of_users = add_user(self.list_of_users, username, password)
-                list_of_users = save_users(self.list_of_users)
-                print(list_of_users)
-                self.from_new_user()  ##goes back to login screen
-            else:
-                error = Notify_window(4)
+        if password == password_confirm:
+            self.list_of_users = add_user(self.list_of_users, username, password)
+            list_of_users = save_users(self.list_of_users)
+            print(list_of_users)
+            self.from_new_user()  ##goes back to login screen
         else:
-            Notify_window(3)
+            error = Notify_window(4)
 
 
 class Notify_window():  # Class to warn users of errors various errors or to notify them of a conformation
     # If you want to add more errors or conformations, start a new block of if and elif cases
     # Use this class for any notifications that require a separate window
-    ## need a window to: show file writing was success && paramaters saved, user added,
     def __init__(self, error):
         winsound.PlaySound("sound.wav", winsound.SND_ASYNC)  # Basic windows error sound to notify users
         box = Tk()  # Creating a separate tk window for the errors
@@ -289,17 +259,18 @@ class Notify_window():  # Class to warn users of errors various errors or to not
         Ok_button.place(x=110, y=50)
 
         # Add more statements if you have more errors to throw, please label the errors
+        ## need a window to: show file writing was success && paramaters saved
         if error == 1:  # For no username entered in register
             error1_label = Label(box, text="Username already exists")
             error1_label.place(x=80, y=20)
 
-        elif error == 2:  # For after save/apply is pressed
-            error2_label = Label(box, text="Parameters successfully updated")
+        elif error == 2:  # For no password entered in register
+            error2_label = Label(box, text="Please enter a password")
             error2_label.place(x=80, y=20)
 
         elif error == 3:  # For no confirm password in register
-            error3_label = Label(box, text="Username/Password must have at least\n5 characters and contain a number")
-            error3_label.place(x=55, y=20)
+            error3_label = Label(box, text="Please confirm your password")
+            error3_label.place(x=80, y=20)
 
         elif error == 4:  # For non matching passwords entered in register
             error4_label = Label(box, text="Passwords do not match")
@@ -309,17 +280,17 @@ class Notify_window():  # Class to warn users of errors various errors or to not
             created_label = Label(box, text="Registration confrimed!")
             created_label.place(x=80, y=20)
 
-        elif error == 6:
+        elif error == 6:  # Either password or username is incorrect
             error6_label = Label(box, text="Username or Password is incorrect")
             error6_label.place(x=80, y=20)
 
-        elif error == 7:
+        elif error == 7:  # Already have 10 users registered
             error7_label = Label(box, text="There are already 10 users")
             error7_label.place(x=80, y=20)
 
-        elif error == 8:
-            error7_label = Label(box, text="Invalid Parameter")
-            error7_label.place(x=80, y=20)
+        elif error == 8:  #
+            error8_label = Lable(box, text="Invalid input")
+
 
 # Class for the pacing window screen, again this follows the basic structure as the other classes for frame creation
 class Pacing_Window:
@@ -391,169 +362,178 @@ class Parameter_Window:
         self.mode = mode
         self.user = user
         self.master = master
-
         self.parameters = self.old_parameters()
 
-        self.background_image = tk.PhotoImage(file="backgroundpacing2.png")
-        self.label = Label(self.frame_root, image=self.background_image)
-        self.label.image = self.background_image
-        self.label.pack()
-
-        self.entry_Upperlim = Entry(self.frame_root)
-        self.entry_Upperlim.place(x=125, y=172)
-        self.entry_Lowerlim = Entry(self.frame_root)
-        self.entry_Lowerlim.place(x=125, y=222)
-        self.entry_Sensor_Rate = Entry(self.frame_root)
-        self.entry_Sensor_Rate.place(x=125, y=272)
-        self.entry_AV_Delay = Entry(self.frame_root)
-        self.entry_AV_Delay.place(x=125, y=322)
-        self.entry_Dyn_AV_Delay = Entry(self.frame_root)
-        self.entry_Dyn_AV_Delay.place(x=125, y=372)
-        self.entry_AV_Delay_Off1 = Entry(self.frame_root)
-        self.entry_AV_Delay_Off1.place(x=125, y=422)
-
-
-        self.entry_Atr_Amp = Entry(self.frame_root)
-        self.entry_Atr_Amp.place(x=400, y=172)
-        self.entry_Vent_Amp = Entry(self.frame_root)
-        self.entry_Vent_Amp.place(x=400, y=222)
-        self.entry_Atr_Pulse = Entry(self.frame_root)
-        self.entry_Atr_Pulse.place(x=400, y=272)
-        self.entry_Vent_Pulse = Entry(self.frame_root)
-        self.entry_Vent_Pulse.place(x=400, y=322)
-        self.entry_Vent_Sens = Entry(self.frame_root)
-        self.entry_Vent_Sens.place(x=400, y=372)
-        self.entry_Atr_Sens = Entry(self.frame_root)
-        self.entry_Atr_Sens.place(x=400, y=422)
-
-        self.entry_VRP = Entry(self.frame_root)
-        self.entry_VRP.place(x=650, y=172)
-        self.entry_ARP = Entry(self.frame_root)
-        self.entry_ARP.place(x=650, y=222)
-        self.entry_PVARP = Entry(self.frame_root)
-        self.entry_PVARP.place(x=650, y=272)
-        self.entry_PVARP_Ext = Entry(self.frame_root)
-        self.entry_PVARP_Ext.place(x=650, y=322)
-        self.entry_Hyst = Entry(self.frame_root)
-        self.entry_Hyst.place(x=650, y=372)
-        self.entry_Rate_Smooth = Entry(self.frame_root)
-        self.entry_Rate_Smooth.place(x=650, y=422)
-
-        self.entry_ATR_Dur = Entry(self.frame_root)
-        self.entry_ATR_Dur.place(x=920, y=172)
-        self.entry_ATR_Fallback_Mode = Entry(self.frame_root)
-        self.entry_ATR_Fallback_Mode.place(x=920, y=222)
-        self.entry_ATR_Fallback_time = Entry(self.frame_root)
-        self.entry_ATR_Fallback_time.place(x=920, y=272)
-        self.entry_Act_Thres = Entry(self.frame_root)
-        self.entry_Act_Thres.place(x=920, y=322)
-        self.entry_React_Time = Entry(self.frame_root)
-        self.entry_React_Time.place(x=920, y=372)
-        self.entry_Resp_Fact = Entry(self.frame_root)
-        self.entry_Resp_Fact.place(x=920, y=422)
-
-        self.entry_Recv_Time = Entry(self.frame_root)
-        self.entry_Recv_Time.place(x=1190, y=172)
-
-
-
-        self.Back_image = tk.PhotoImage(file="Back.png")
-        self.button_back = Button(self.frame_root, image=self.Back_image)
-        self.button_back.config(command=self.from_Parameter_Window)
-        self.button_back.place(x=1300, y=50)
-
-        self.label_lowlim = Label(self.frame_root, text="Lower Rate limit:")
-        self.label_lowlim.place(x=30, y=170)
-        self.label_uplim = Label(self.frame_root, text="Upper Rate limit:")
-        self.label_uplim.place(x=30, y=220)
-        self.label_Sensor_Rate = Label(self.frame_root, text="Max Sensor Rate:")
-        self.label_Sensor_Rate.place(x=30, y=270)
-        self.label_AV_Delay = Label(self.frame_root, text="Fixed AV Delay:")
-        self.label_AV_Delay.place(x=30, y=320)
-        self.label_Dyn_AV_Delay = Label(self.frame_root, text="Dynamic Av Delay:")
-        self.label_Dyn_AV_Delay.config(font=("Times", 8))
-        self.label_Dyn_AV_Delay.place(x=25, y=370)
-        self.label_Sen_AV_Delay_Off1 = Label(self.frame_root, text="Sensed AV:")
-        self.label_Sen_AV_Delay_Off2 = Label(self.frame_root, text="Delay Offset")
-        self.label_Sen_AV_Delay_Off1.place(x=30, y=420)
-
-        self.label_Atr_Amp = Label(self.frame_root, text="Atrial Amplitude:")
-        self.label_Atr_Amp.place(x=300, y=170)
-        self.label_Vent_Amp = Label(self.frame_root, text="Ventricle Amplitude:")
-        self.label_Vent_Amp.place(x=283, y=220)
-        self.label_Atr_Pulse = Label(self.frame_root, text="Atrial Pulse Width:")
-        self.label_Atr_Pulse.place(x=292, y=270)
-        self.label_Vent_Pulse = Label(self.frame_root, text="Ventricle Pulse Width:")
-        self.label_Vent_Pulse.place(x=276, y=320)
-        self.label_Vent_Sens = Label(self.frame_root, text="Ventricle Sensitivity:")
-        self.label_Vent_Sens.place(x=288, y=370)
-        self.label_Atr_Sens = Label(self.frame_root, text="Atrial Sensitivity:")
-        self.label_Atr_Sens.place(x=303, y=420)
-
-        self.label_VRP = Label(self.frame_root, text="VRP:")
-        self.label_VRP.place(x=610, y=170)
-        self.label_ARP = Label(self.frame_root, text="ARP:")
-        self.label_ARP.place(x=610, y=220)
-        self.label_PVARP = Label(self.frame_root, text="PVARP:")
-        self.label_PVARP.place(x=600, y=270)
-        self.label_PVARP_Ext = Label(self.frame_root, text="PVARP Extension:")
-        self.label_PVARP_Ext.place(x=550, y=320)
-        self.label_Hyst = Label(self.frame_root, text="Hysteresis:")
-        self.label_Hyst.place(x=585, y=370)
-        self.label_Rate_Smooth = Label(self.frame_root, text="Rate Smoothing:")
-        self.label_Rate_Smooth.place(x=552, y=420)
-
-        self.label_ATR_Dur = Label(self.frame_root, text="ATR Duration:")
-        self.label_ATR_Dur.place(x=833, y=170)
-        self.label_ATR_Fallback_Mode = Label(self.frame_root, text="ATR Fallback Mode:")
-        self.label_ATR_Fallback_Mode .place(x=805, y=220)
-        self.label_ATR_Fallback_time = Label(self.frame_root, text="ATR Fallback Time:")
-        self.label_ATR_Fallback_time.place(x=810, y=270)
-        self.label_Act_Thres = Label(self.frame_root, text="Acticity Threshold:")
-        self.label_Act_Thres.place(x=810, y=320)
-        self.label_React_Time = Label(self.frame_root, text="Reaction Time:")
-        self.label_React_Time.place(x=830, y=370)
-        self.label_Resp_Fact = Label(self.frame_root, text="Response Factor:")
-        self.label_Resp_Fact.place(x=823, y=420)
-
-        self.label_Recv_Time = Label(self.frame_root, text="Recovery Time:")
-        self.label_Recv_Time.place(x=1100, y=170)
-
-
-        self.button_ok = Button(self.frame_root, text="     Ok     ")
-        self.button_ok.config(command=self.Ok)
-        self.button_ok.place(x=700, y=450)
-
-        self.button_apply = Button(self.frame_root, text="    Apply    ")
-        self.button_apply.config(command=self.Apply)
-        self.button_apply.place(x=800, y=450)
-
-        # The following 4 modes will display the correct set of titles depending on which pacing mode the user want to
+        # The following 4 modes will display the correct set of titles depending on which pacing mode the user wants to
         # edit
         if self.mode == 1:
+            self.background_image = tk.PhotoImage(file="backgroundpacingAOOVOO.png")
+            self.label = Label(self.frame_root, image=self.background_image)
+            self.label.image = self.background_image
+            self.label.pack()
+            # comman's parameters are the x and y coordinates for the various widgets it creates
+            self.common(125, 172, 125, 222, 30, 220, 30, 170, 300, 50, 300, 350, 300, 300)
+
             self.label_title1 = Label(self.frame_root, text="AOO Pacing Mode")
-            self.label_title1.config(font=("Courier", 15))
-            self.label_title1.place(x=650, y=130)
+            self.label_title1.config(font=("Courier", 11))
+            self.label_title1.place(x=130, y=145)
+            self.label_Atr_Amp = Label(self.frame_root, text="Atrial Amplitude:")
+            self.label_Atr_Amp.place(x=30, y=270)
+            self.label_Atr_Pulse = Label(self.frame_root, text="Atrial Pulse Width:")
+            self.label_Atr_Pulse.place(x=24, y=320)
+            self.label_Atr_Sens = Label(self.frame_root, text="Atrial Sensitivity:")
+            self.label_Atr_Sens.place(x=30, y=370)
+            self.label_ARP = Label(self.frame_root, text="ARP:")
+            self.label_ARP.place(x=93, y=420)
+            self.label_PVARP = Label(self.frame_root, text="PVARP:")
+            self.label_PVARP.place(x=80, y=470)
+
+            self.entry_Atr_Amp = Entry(self.frame_root)
+            self.entry_Atr_Amp.place(x=125, y=270)
+            self.entry_Atr_Pulse = Entry(self.frame_root)
+            self.entry_Atr_Pulse.place(x=125, y=320)
+            self.entry_Atr_Sens = Entry(self.frame_root)
+            self.entry_Atr_Sens.place(x=125, y=370)
+            self.entry_ARP = Entry(self.frame_root)
+            self.entry_ARP.place(x=125, y=420)
+            self.entry_PVARP = Entry(self.frame_root)
+            self.entry_PVARP.place(x=125, y=470)
+
             self.write_parameters()
 
+
         elif self.mode == 2:
+            self.background_image = tk.PhotoImage(file="backgroundpacingAOOVOO.png")
+            self.label = Label(self.frame_root, image=self.background_image)
+            self.label.image = self.background_image
+            self.label.pack()
+
+            self.common(155,192,155,242,60,240,60,190,300,50,300,310,300,260)
+
             self.label_title2 = Label(self.frame_root, text="VOO Pacing Mode")
             self.label_title2.config(font=("Courier", 15))
-            self.label_title2.place(x=650, y=130)
+            self.label_title2.place(x=100, y=150)
+            self.label_Vent_Amp = Label(self.frame_root, text="Ventricle Amplitude:")
+            self.label_Vent_Amp.place(x=40, y=292)
+            self.label_Vent_Pulse = Label(self.frame_root, text="Ventricle Pulse Width:")
+            self.label_Vent_Pulse.place(x=33, y=342)
+
+            self.entry_Vent_Amp = Entry(self.frame_root)
+            self.entry_Vent_Amp.place(x=155, y=292)
+            self.entry_Vent_Pulse = Entry(self.frame_root)
+            self.entry_Vent_Pulse.place(x=155, y=342)
             self.write_parameters()
 
 
         elif self.mode == 3:
+
+            self.background_image = tk.PhotoImage(file="backgroundpacingVIIAAI.png")
+            self.label = Label(self.frame_root, image=self.background_image)
+            self.label.image = self.background_image
+            self.label.pack()
+
+            self.common(155, 192, 155, 242, 60, 240, 60, 190, 430, 100, 400, 420, 400, 370)
+
             self.label_title3 = Label(self.frame_root, text="AAI Pacing Mode")
             self.label_title3.config(font=("Courier", 15))
-            self.label_title3.place(x=650, y=130)
+            self.label_title3.place(x=200, y=150)
+            self.label_Atr_Amp = Label(self.frame_root, text="Atrial Amplitude:")
+            self.label_Atr_Amp.place(x=57, y=342)
+            self.label_Atr_Pulse = Label(self.frame_root, text="Atrial Pulse Width:")
+            self.label_Atr_Pulse.place(x=50, y=292)
+            self.label_Atr_Sens = Label(self.frame_root, text="Atrial Sensitivity:")
+            self.label_Atr_Sens.place(x=62, y=392)
+            self.label_ARP = Label(self.frame_root, text="ARP:")
+            self.label_ARP.place(x=125, y=442)
+            self.label_PVARP = Label(self.frame_root, text="PVARP:")
+            self.label_PVARP.place(x=365, y=192)
+            self.label_Hyst = Label(self.frame_root, text="Hysteresis:")
+            self.label_Hyst.place(x=345, y=242)
+            self.label_Rate_Smooth = Label(self.frame_root, text="Rate Smoothing:")
+            self.label_Rate_Smooth.place(x=315, y=292)
+
+            self.entry_Atr_Pulse = Entry(self.frame_root)
+            self.entry_Atr_Pulse.place(x=155, y=292)
+            self.entry_Atr_Amp = Entry(self.frame_root)
+            self.entry_Atr_Amp.place(x=155, y=342)
+            self.entry_Atr_Sens = Entry(self.frame_root)
+            self.entry_Atr_Sens.place(x=155, y=392)
+            self.entry_ARP = Entry(self.frame_root)
+            self.entry_ARP.place(x=155, y=442)
+
+            self.entry_PVARP = Entry(self.frame_root)
+            self.entry_PVARP.place(x=410, y=192)
+            self.entry_Hyst = Entry(self.frame_root)
+            self.entry_Hyst.place(x=410, y=242)
+            self.entry_Rate_Smooth = Entry(self.frame_root)
+            self.entry_Rate_Smooth.place(x=410, y=292)
+
             self.write_parameters()
 
+
         elif self.mode == 4:
+            self.background_image = tk.PhotoImage(file="backgroundpacingVIIAAI.png")
+            self.label = Label(self.frame_root, image=self.background_image)
+            self.label.image = self.background_image
+            self.label.pack()
+
+            self.common(180, 182, 180, 232, 85, 182, 85, 232, 430, 100, 400, 350, 400, 300)
+
             self.label_title4 = Label(self.frame_root, text="VII Pacing Mode")
-            self.label_title4.config(font=("Courier", 15))
-            self.label_title4.place(x=650, y=130)
+            self.label_title4.config(font=("Courier", 12))
+            self.label_title4.place(x=210, y=150)
+            self.label_Vent_Amp = Label(self.frame_root, text="Ventricle Amplitude:")
+            self.label_Vent_Amp.place(x=66, y=272)
+            self.label_Vent_Pulse = Label(self.frame_root, text="Ventricle Pulse Width:")
+            self.label_Vent_Pulse.place(x=60, y=322)
+            self.label_Vent_Sens = Label(self.frame_root, text="Ventricle Sensitivity:")
+            self.label_Vent_Sens.place(x=70, y=372)
+            self.label_VRP = Label(self.frame_root, text="VRP:")
+            self.label_VRP.place(x=150, y=422)
+            self.label_Hyst = Label(self.frame_root, text="Hysteresis:")
+            self.label_Hyst.place(x=335, y=172)
+            self.label_Rate_Smooth = Label(self.frame_root, text="Rate Smoothing:")
+            self.label_Rate_Smooth.place(x=317, y=222)
+
+            self.entry_Vent_Amp = Entry(self.frame_root)
+            self.entry_Vent_Amp.place(x=180, y=272)
+            self.entry_Vent_Pulse = Entry(self.frame_root)
+            self.entry_Vent_Pulse.place(x=180, y=322)
+            self.entry_Vent_Sens = Entry(self.frame_root)
+            self.entry_Vent_Sens.place(x=180, y=372)
+            self.entry_VRP = Entry(self.frame_root)
+            self.entry_VRP.place(x=180, y=422)
+            self.entry_Hyst = Entry(self.frame_root)
+            self.entry_Hyst.place(x=410, y=182)
+            self.entry_Rate_Smooth = Entry(self.frame_root)
+            self.entry_Rate_Smooth.place(x=410, y=232)
             self.write_parameters()
+
+    # All widgets are created in common() are common between all 4 pacing mode. Because the layout for the window of
+    # each mode is different we will just pass the x and y coord as parameters when the method is called
+    def common(self, upperlimx, upperlimy, lowerlimx, lowerlimy, upperlimx2, upperlimy2, lowerlimx2, lowerlimy2, backx,
+               backy, okx, oky, applyx, applyy):
+        self.entry_Upperlim = Entry(self.frame_root)
+        self.entry_Upperlim.place(x=upperlimx, y=upperlimy)
+        self.entry_Lowerlim = Entry(self.frame_root)
+        self.entry_Lowerlim.place(x=lowerlimx, y=lowerlimy)
+
+        self.label_lowlim = Label(self.frame_root, text="Lower Rate limit:")
+        self.label_lowlim.place(x=lowerlimx2, y=lowerlimy2)
+        self.label_uplim = Label(self.frame_root, text="Upper Rate limit:")
+        self.label_uplim.place(x=upperlimx2, y=upperlimy2)
+
+        self.Back_image = tk.PhotoImage(file="Back.png")
+        self.button_back = Button(self.frame_root, image=self.Back_image)
+        self.button_back.config(command=self.from_Parameter_Window)
+        self.button_back.place(x=backx, y=backy)
+
+        self.button_ok = Button(self.frame_root, text="     Ok     ")
+        self.button_ok.config(command=self.Ok)
+        self.button_apply = Button(self.frame_root, text="    Apply    ")
+        self.button_apply.config(command=self.Apply)
+        self.button_apply.place(x=applyx, y=applyy)
+        self.button_ok.place(x=okx, y=oky)
 
     def from_Parameter_Window(self):  # Returns to the pacing screen
         self.frame_root.pack_forget()
@@ -609,7 +589,7 @@ class Parameter_Window:
                     break
                 else:
                     i = i + 26
-            except EOFError or IndexError:  ##if user not found add them and their data
+            except EOFError:  ##if user not found add them and their data
                 self.parameters.append(self.user)
                 self.parameters.append(self.entry_Upperlim.get())
                 self.parameters.append(self.entry_Lowerlim.get())
@@ -631,73 +611,41 @@ class Parameter_Window:
                 self.parameters.append(self.entry_Rate_Smooth.get())
                 self.parameters.append(self.entry_ATR_Dur.get())
                 self.parameters.append(self.entry_ATR_Fallback_Mode.get())
-                self.parameters.append( self.entry_Act_Thres.get())
+                self.parameters.append(self.entry_Act_Thres.get())
                 self.parameters.append(self.entry_React_Time.get())
                 self.parameters.append(self.entry_Resp_Fact.get())
                 self.parameters.append(self.entry_Recv_Time.get())
                 self.parameters.append(self.mode)
                 break
-            except IndexError: ##here we have the parameters and there bounds, just copy the if statement into the proper location,
-                ## make sure each screen only shows the ones it needs for the desired mode
+            except IndexError:
                 self.parameters.append(self.user)
-                if int(self.entry_Upperlim.get()) < 100 and int(self.entry_Upperlim.get()) > int(self.entry_Lowerlim.get()):
-                    self.parameters.append(self.entry_Upperlim.get())
-                if int(self.entry_Lowerlim.get()) < int(self.entry_Upperlim.get()) and int(self.entry_Lowerlim.get()) >= 60:
-                    self.parameters.append(self.entry_Lowerlim.get())
-                #if int(self.entry_Sensor_Rate.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_Sensor_Rate.get()) ##sensor rate range between TBD
-                if int(self.entry_AV_Delay.get()) <= 300 and int(self.entry_AV_Delay.get()) >= 150:
-                    self.parameters.append(self.entry_AV_Delay.get()) ## between 150 - 300 ms
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_Dyn_AV_Delay.get()) ## TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_AV_Delay_Off1.get()) ## TBD
-                if int(self.entry_Atr_Amp.get()) <= 80 and int(self.entry_Atr_Amp.get()) >= 30:
-                    self.parameters.append(self.entry_Atr_Amp.get()) ## between 30 - 80
-                if int(self.entry_Vent_Amp.get()) <= 80 and int(self.entry_Vent_Amp.get()) >= 30:
-                    self.parameters.append(self.entry_Vent_Amp.get()) ## same as atr
-                if int(self.entry_Atr_Pulse.get()) <= 10 and int(self.entry_Atr_Pulse.get()) >= 1:
-                    self.parameters.append(self.entry_Atr_Pulse.get()) ## 1 - 10
-                if int(self.entry_Vent_Pulse.get()) <= 10 and int(self.entry_Vent_Pulse.get()) >= 1:
-                    self.parameters.append(self.entry_Vent_Pulse.get()) ## 1 - 10
-               # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #    self.parameters.append(self.entry_Vent_Sens.get()) ## between TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_Atr_Sens.get()) ## between TBD
-                if int(self.entry_VRP.get()) <= 300 and int(self.entry_VRP.get()) >= 150:
-                    self.parameters.append(self.entry_VRP.get()) ## between 150 - 300ms
-                if int(self.entry_ARP.get()) <= 300 and int(self.entry_ARP.get()) >= 150:
-                    self.parameters.append(self.entry_ARP.get()) ## 150  - 300
-                if int(self.entry_PVARP.get()) <= 300 and int(self.entry_PVARP.get()) >= 150:
-                    self.parameters.append(self.entry_PVARP.get()) ## 150 - 300
-                if int(self.entry_PVARP_Ext.get()) <= 300 and int(self.entry_PVARP_Ext.get()) >= 150:
-                    self.parameters.append(self.entry_PVARP_Ext.get()) ## 150 - 300 (TBD)
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_Hyst.get()) ## baked into the board, not needed
-               # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #    self.parameters.append(self.entry_Rate_Smooth.get()) ## TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_ATR_Dur.get())    ## TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_ATR_Fallback_Mode.get())  ## TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_Act_Thres.get()) ## TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_React_Time.get()) ## TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_Resp_Fact.get()) ## TBD
-                #if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                 #   self.parameters.append(self.entry_Recv_Time.get()) ## TBD
+                self.parameters.append(self.entry_Upperlim.get())
+                self.parameters.append(self.entry_Lowerlim.get())
+                self.parameters.append(self.entry_Sensor_Rate.get())
+                self.parameters.append(self.entry_AV_Delay.get())
+                self.parameters.append(self.entry_Dyn_AV_Delay.get())
+                self.parameters.append(self.entry_AV_Delay_Off1.get())
+                self.parameters.append(self.entry_Atr_Amp.get())
+                self.parameters.append(self.entry_Vent_Amp.get())
+                self.parameters.append(self.entry_Atr_Pulse.get())
+                self.parameters.append(self.entry_Vent_Pulse.get())
+                self.parameters.append(self.entry_Vent_Sens.get())
+                self.parameters.append(self.entry_Atr_Sens.get())
+                self.parameters.append(self.entry_VRP.get())
+                self.parameters.append(self.entry_ARP.get())
+                self.parameters.append(self.entry_PVARP.get())
+                self.parameters.append(self.entry_PVARP_Ext.get())
+                self.parameters.append(self.entry_Hyst.get())
+                self.parameters.append(self.entry_Rate_Smooth.get())
+                self.parameters.append(self.entry_ATR_Dur.get())
+                self.parameters.append(self.entry_ATR_Fallback_Mode.get())
+                self.parameters.append(self.entry_Act_Thres.get())
+                self.parameters.append(self.entry_React_Time.get())
+                self.parameters.append(self.entry_Resp_Fact.get())
+                self.parameters.append(self.entry_Recv_Time.get())
                 self.parameters.append(self.mode)
                 break
-        all_numbers = True
-        for i in range(0, len(self.parameters) - 1):
-            if self.parameters[i].isdigit() == False:
-                all_numbers = False
-        if all_numbers:
-            pickle.dump(self.parameters, f)
-        else:
-            Notify_window(8)
+        pickle.dump(self.parameters, f)
         f.close()
 
     def old_parameters(self):  ##gets the old parameters
@@ -724,28 +672,28 @@ class Parameter_Window:
                     if self.mode == self.parameters[i + 25]:
                         self.entry_Upperlim.insert(10, self.parameters[i + 1])
                         self.entry_Lowerlim.insert(10, self.parameters[i + 2])
-                        self.entry_Sensor_Rate.insert(10, self.parameters[i+3])
-                        self.entry_AV_Delay.insert(10, self.parameters[i+4])
-                        self.entry_Dyn_AV_Delay.insert(10, self.parameters[i+5])
-                        self.entry_AV_Delay_Off1.insert(10, self.parameters[i+6])
-                        self.entry_Atr_Amp.insert(10, self.parameters[i+7])
-                        self.entry_Vent_Amp.insert(10, self.parameters[i+8])
-                        self.entry_Atr_Pulse.insert(10, self.parameters[i+9])
-                        self.entry_Vent_Pulse.insert(10, self.parameters[i+10])
-                        self.entry_Vent_Sens.insert(10, self.parameters[i+11])
-                        self.entry_Atr_Sens.insert(10, self.parameters[i+12])
-                        self.entry_VRP.insert(10, self.parameters[i+13])
-                        self.entry_ARP.insert(10, self.parameters[i+14])
-                        self.entry_PVARP.insert(10, self.parameters[i+15])
-                        self.entry_PVARP_Ext.insert(10, self.parameters[i+16])
-                        self.entry_Hyst.insert(10, self.parameters[i+17])
-                        self.entry_Rate_Smooth.insert(10, self.parameters[i+18])
-                        self.entry_ATR_Dur.insert(10, self.parameters[i+19])
-                        self.entry_ATR_Fallback_Mode.insert(10, self.parameters[i+20])
-                        self.entry_Act_Thres.insert(10, self.parameters[i+21])
-                        self.entry_React_Time.insert(10, self.parameters[i+22])
-                        self.entry_Resp_Fact.insert(10, self.parameters[i+23])
-                        self.entry_Recv_Time.insert(10, self.parameters[i+24])
+                        self.entry_Sensor_Rate.insert(10, self.parameters[i + 3])
+                        self.entry_AV_Delay.insert(10, self.parameters[i + 4])
+                        self.entry_Dyn_AV_Delay.insert(10, self.parameters[i + 5])
+                        self.entry_AV_Delay_Off1.insert(10, self.parameters[i + 6])
+                        self.entry_Atr_Amp.insert(10, self.parameters[i + 7])
+                        self.entry_Vent_Amp.insert(10, self.parameters[i + 8])
+                        self.entry_Atr_Pulse.insert(10, self.parameters[i + 9])
+                        self.entry_Vent_Pulse.insert(10, self.parameters[i + 10])
+                        self.entry_Vent_Sens.insert(10, self.parameters[i + 11])
+                        self.entry_Atr_Sens.insert(10, self.parameters[i + 12])
+                        self.entry_VRP.insert(10, self.parameters[i + 13])
+                        self.entry_ARP.insert(10, self.parameters[i + 14])
+                        self.entry_PVARP.insert(10, self.parameters[i + 15])
+                        self.entry_PVARP_Ext.insert(10, self.parameters[i + 16])
+                        self.entry_Hyst.insert(10, self.parameters[i + 17])
+                        self.entry_Rate_Smooth.insert(10, self.parameters[i + 18])
+                        self.entry_ATR_Dur.insert(10, self.parameters[i + 19])
+                        self.entry_ATR_Fallback_Mode.insert(10, self.parameters[i + 20])
+                        self.entry_Act_Thres.insert(10, self.parameters[i + 21])
+                        self.entry_React_Time.insert(10, self.parameters[i + 22])
+                        self.entry_Resp_Fact.insert(10, self.parameters[i + 23])
+                        self.entry_Recv_Time.insert(10, self.parameters[i + 24])
 
                         break
                     else:
