@@ -18,6 +18,9 @@
 # import Pacing_Screen          #
 # import EGram_Window           #
 # import Notify_Window          #
+# import serial                 #
+# import Serial_com             #
+# import time                   #
 #################################
 from tkinter import *
 import tkinter as tk
@@ -25,11 +28,9 @@ import pickle
 import New_User_Screen
 import Menu_Window
 import Notifiy_Window
-import pandas as pd
-import Excel_Handling as ex
 
 
-##all these functions are useless
+
 def save_users(list_of_users):  ##writing users to file
     f = open("Users.txt", 'wb')  # opens file then dumps users into file
     pickle.dump(list_of_users, f)
@@ -99,14 +100,13 @@ list_of_users = read_users()
 last_login = read_last_login()
 
 class Login_Window:  # Class for the create of the main login window
-    def __init__(self, master, df):  ##initializes the class, root is the master
+    def __init__(self, master):  ##initializes the class, root is the master
 
         # We will be using the same root window and placing and removing frames different frames, every class will
         # have its own frame
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
         self.master = master
-        self.df = df
 
         # Here we are setting the background image for the window. line 46 creates a reference to the image as python
         # will garbage collect the image if there is no reference made
@@ -131,7 +131,12 @@ class Login_Window:  # Class for the create of the main login window
         self.entry_pass.place(x=170, y=380)
 
         # Block for the creation of the checkboxes for the login frame
-        ##self.get_old_users()  ##gets old user login info if remember me is checked,
+        self.check_state_var = IntVar()  ##variable to check the state of the checkbox
+        self.checkbutton_remember = Checkbutton(self.frame_root,
+                                                variable=self.check_state_var)  ##, command=self.remember_me())
+        self.checkbutton_remember.config(command=self.remember_me)
+        self.checkbutton_remember.place(x=165, y=400)
+        self.get_old_users()  ##gets old user login info if remember me is checked,
 
         # Block for the creation of the buttons for the login frame
         self.button_login = Button(self.frame_root, text="Login",
@@ -141,26 +146,39 @@ class Login_Window:  # Class for the create of the main login window
         self.button_create = Button(self.frame_root, text="New User", command=self.new_user_window)
         self.button_create.place(x=235, y=425)
 
+    def remember_me(self):  ##function called when remember me box ix checked, saves user to a file
+        if self.check_state_var.get() == 1:  ##checks if remember me is checked adds info to dump to file
+            to_dump = [self.entry_user.get(), self.entry_pass.get(), self.check_state_var.get()]
+            f = open("Remembered.txt", 'wb')
+            pickle.dump(to_dump, f)  ##dumps info
+            f.close()
+        if self.check_state_var.get() == 0:
+            to_dump = []
+            f = open("Remembered.txt", 'wb')
+            pickle.dump(to_dump, f)  ##dumps info
+            f.close()
+
     def menu_screen(self):  ##calls menu screen
         password = self.entry_pass.get()
         username = self.entry_user.get()
         list_of_users = read_users()
         success = 0  ##variable to check if need to call error window
-
-        for i in range(0, 20, 2): # checks if user exists and password is correct
-            if self.df['Users'].iloc[i] == username:
-                if password == self.df['Users'].iloc[i+1]:
-                    self.frame_root.pack_forget()
-                    self.menuscreen = Menu_Window.menu(self.master, username, self.df)
-                    success = 1
+        try:
+            for i in range(0, len(list_of_users) - 1, 2):  # checks if user exists and password is correct
+                if list_of_users[i] == username:
+                    if password == list_of_users[i + 1]:
+                        self.frame_root.pack_forget()
+                        self.menuscreen = Menu_Window.menu(self.master, username)
+                        success = 1
+        except TypeError:
+            pass
         if success == 0:
             Error = Notifiy_Window.Notify_window(6)  ##user does not exist
 
     def new_user_window(self):  # calls new user screen
         self.frame_root.pack_forget()
-        self.NewUserWindow = New_User_Screen.New_User_Window(self.master, self.df)
+        self.NewUserWindow = New_User_Screen.New_User_Window(self.master, list_of_users)
 
-##should be useless
     def get_old_users(self):
         try:
             old_user = []
