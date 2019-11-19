@@ -21,6 +21,8 @@
 # import serial                 #
 # import Serial_com             #
 # import time                   #
+#import panda as pd             #
+#import Excel_Handling as ex    #
 #################################
 from tkinter import *
 import tkinter as tk
@@ -30,11 +32,10 @@ import pandas as pd
 import Excel_Handling as ex
 
 class New_User_Window:
-    def __init__(self, master, list_of_users, df):
+    def __init__(self, master, df):
         #frame definition
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
-        self.list_of_users = list_of_users
         self.master = master
         self.df = df
 
@@ -70,7 +71,7 @@ class New_User_Window:
 
     def from_new_user(self):  # Transition function from new user window to the login screen
         self.frame_root.pack_forget()
-        self.LoginScreen = Login_Screen.Login_Window(self.master)
+        self.LoginScreen = Login_Screen.Login_Window(self.master, self.df)
 
     def create_user(self):  # We take the collected username and password and save them
         username = self.entry_username.get()  ##get entries

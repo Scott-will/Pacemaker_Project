@@ -21,6 +21,8 @@
 # import serial                 #
 # import Serial_com             #
 # import time                   #
+#import panda as pd             #
+#import Excel_Handling as ex    #
 #################################
 from tkinter import *
 import tkinter as tk
@@ -70,9 +72,6 @@ class Login_Window:  # Class for the create of the main login window
         self.check_state_var = IntVar()  ##variable to check the state of the checkbox
         self.checkbutton_remember = Checkbutton(self.frame_root,
                                                 variable=self.check_state_var)  ##, command=self.remember_me())
-        self.checkbutton_remember.config(command=self.remember_me)
-        self.checkbutton_remember.place(x=165, y=400)
-        self.get_old_users()  ##gets old user login info if remember me is checked,
 
         # Block for the creation of the buttons for the login frame
         self.button_login = Button(self.frame_root, text="Login",
@@ -93,6 +92,7 @@ class Login_Window:  # Class for the create of the main login window
                     self.frame_root.pack_forget()
                     self.menuscreen = Menu_Window.menu(self.master, username, self.df)
                     success = 1
+                    break
         if success == 0:
             Error = Notifiy_Window.Notify_window(6)  ##user does not exist
 

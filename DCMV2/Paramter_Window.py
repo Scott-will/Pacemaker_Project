@@ -21,6 +21,8 @@
 # import serial                 #
 # import Serial_com             #
 # import time                   #
+#import panda as pd             #
+#import Excel_Handling as ex    #
 #################################
 from tkinter import *
 import tkinter as tk
@@ -38,8 +40,7 @@ class Parameter_Window:
         self.mode = mode
         self.user = user
         self.master = master
-        self.parameters = self.old_parameters()
-        self.df
+        self.df = df
 
 
 
@@ -78,7 +79,7 @@ class Parameter_Window:
             self.entry_PVARP = Entry(self.frame_root)
             self.entry_PVARP.place(x=125, y=470)
 
-            self.write_parameters()
+
 
         elif self.mode == 2:
             self.background_image = tk.PhotoImage(file="backgroundpacingAOOVOO.png")
@@ -100,7 +101,7 @@ class Parameter_Window:
             self.entry_Vent_Amp.place(x=155, y=292)
             self.entry_Vent_Pulse = Entry(self.frame_root)
             self.entry_Vent_Pulse.place(x=155, y=342)
-            self.write_parameters()
+
 
 
         elif self.mode == 3:
@@ -145,7 +146,6 @@ class Parameter_Window:
             self.entry_Rate_Smooth = Entry(self.frame_root)
             self.entry_Rate_Smooth.place(x=410, y=292)
 
-            self.write_parameters()
 
 
         elif self.mode == 4:
@@ -184,7 +184,7 @@ class Parameter_Window:
             self.entry_Hyst.place(x=410, y=182)
             self.entry_Rate_Smooth = Entry(self.frame_root)
             self.entry_Rate_Smooth.place(x=410, y=232)
-            self.write_parameters()
+
 
         elif self.mode == 5:
             self.background_image = tk.PhotoImage(file="backgroundpacingAOOVOO.png")
@@ -581,14 +581,57 @@ class Parameter_Window:
 
 
     def Apply(self):  # Apply will save the #parameters in the entry fields and return to the pacing screen
+        if self.mode == 1:
+            self.save_AOO()
+        elif self.mode == 2:
+            self.save_VOO()
+        elif self.mode == 3:
+            self.save_AAI()
+        elif self.mode == 4:
+            self.save_VVI()
+        elif self.mode == 5:
+            self.save_DOO()
+        elif self.mode == 6:
+            self.save_DOOR()
+        elif self.mode == 7:
+            self.save_DDDR()
+        elif self.mode == 8:
+            self.save_AOOR()
+        elif self.mode == 9:
+            self.save_VVIR()
+        elif self.mode == 10:
+            self.save_AAIR()
+        elif self.mode == 11:
+            self.save_VOOR()
+
         self.frame_root.pack_forget()
         self.PacingWindow = Pacing_Screen.Pacing_Window(self.master, self.user, self.df)
         # Add code here to also save the parameters
 
-        self.save_parameters()
-
     def Ok(self):  # Ok will only save the parameters in the entry fields
-        self.save_parameters()  # Just random code so pycharm doesnt freak out that there is nothing in the function
+        if self.mode == 1:
+            self.save_AOO()
+        elif self.mode == 2:
+            self.save_VOO()
+        elif self.mode == 3:
+            self.save_AAI()
+        elif self.mode == 4:
+            self.save_VVI()
+        elif self.mode == 5:
+            self.save_DOO()
+        elif self.mode == 6:
+            self.save_DOOR()
+        elif self.mode == 7:
+            self.save_DDDR()
+        elif self.mode == 8:
+            self.save_AOOR()
+        elif self.mode == 9:
+            self.save_VVIR()
+        elif self.mode == 10:
+            self.save_AAIR()
+        elif self.mode == 11:
+            self.save_VOOR()
+        # Just random code so pycharm doesnt freak out that there is nothing in the function
         # add code here to save the parameters
 
     def save_VOO(self):
@@ -598,16 +641,15 @@ class Parameter_Window:
                     if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'VOO Lower Rate Limit'] = int(self.entry_Lowerlim.get())
-                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get)
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'VOO Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Vent_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'VOO Pulse Width'] = int(self.entry_Vent_Pulse.get())
-                    if int(self..get()) in range(50, 101):
+                    if int(self.entry_Vent_Amp.get()) in range(50, 101):
                         self.df[self.df['Users'].iloc[i], 'VOO Ventrical Amplitude'] = int(self.entry_Vent_Amp.get())
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
 
     def save_AOO(self):
         try:
@@ -617,7 +659,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AOO Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get)
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AOO Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Atr_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'AOO Pulse Width'] = int(self.entry_Atr_Pulse.get())
@@ -625,7 +667,7 @@ class Parameter_Window:
                         self.df[self.df['Users'].iloc[i], 'AOO Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
         ##LowerRateLimit, upper rate limit, pulse width, atrial amplitude
         ##save parameter
 
@@ -637,7 +679,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'VVI Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get())
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'VVI Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Vent_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'VVI Pulse Width'] = int(self.entry_Vent_Pulse.get())
@@ -652,7 +694,7 @@ class Parameter_Window:
 
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
 
     def save_AAI(self):
         try:
@@ -662,7 +704,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AAI Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get())
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AAI Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Atr_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'AAI Pulse Width'] = int(self.entry_Atr_Pulse.get())
@@ -676,7 +718,7 @@ class Parameter_Window:
                         self.df[self.df['Users'].iloc[i], 'AAI Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
 
     def save_DOO(self):
         try:
@@ -686,7 +728,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'DOO Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get())
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'DOO Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Vent_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'DOO Ventrical Pulse Width'] = int(self.entry_Vent_Pulse.get())
@@ -700,7 +742,7 @@ class Parameter_Window:
                         self.df[self.df['Users'].iloc[i], 'DOO Fixed AV Delay'] = int(self.entry_AV_del.get())
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
         # save parameters
     def save_AOOR(self):
         try:
@@ -710,7 +752,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AOOR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get)
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AOOR Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Atr_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'AOOR Pulse Width'] = int(self.entry_Atr_Pulse.get())
@@ -729,10 +771,10 @@ class Parameter_Window:
 
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
         ##save parameters
 
-     def save_AAIR(self):
+    def save_AAIR(self):
         try:
             for i in range(0, 20, 2):
                 if self.user == self.df['Users'].iloc[i]:  ##find user
@@ -740,7 +782,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AAIR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get())
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'AAIR Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Atr_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'AAIR Pulse Width'] = int(self.entry_Atr_Pulse.get())
@@ -764,11 +806,10 @@ class Parameter_Window:
                         self.df[self.df['Users'].iloc[i], 'AAIR ARP'] = int(self.entry_ARP.get())
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
         ##save parameters
     def save_VOOR(self):
-
-
+        print('5')
         ##save parameters
     def save_VVIR(self):
         try:
@@ -778,7 +819,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'VVIR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get())
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'VVIR Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Vent_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'VVIR Pulse Width'] = int(self.entry_Vent_Pulse.get())
@@ -802,7 +843,7 @@ class Parameter_Window:
                         self.df[self.df['Users'].iloc[i], 'VVIR VRP'] = int(self.entry_VRP.get())
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_Window.Notify_window(8)
         ##save parameters
     def save_DOOR(self):
         try:
@@ -812,7 +853,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'DOOR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get())
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'DOOR Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Vent_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'DOOR Ventrical Pulse Width'] = int(self.entry_Vent_Pulse.get())
@@ -839,7 +880,7 @@ class Parameter_Window:
 
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
         except ValueError:
-            Notifiy_Window(8)
+            Notifiy_WindowNotify_window(8)
         ##save parameters
     def save_DDDR(self):
         try:
@@ -849,7 +890,7 @@ class Parameter_Window:
                             self.entry_Upperlim.get()):
                         self.df[self.df['Users'].iloc[i], 'DOOR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
                     if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
-                            self.entry_Lowerlim.get())
+                            self.entry_Lowerlim.get()):
                         self.df[self.df['Users'].iloc[i], 'DOOR Upper Rate Limit'] = int(self.entry_UpperLim.get())
                     if int(self.entry_Vent_Pulse.get()) in range(1, 11):
                         self.df[self.df['Users'].iloc[i], 'DOOR Ventrical Pulse Width'] = int(self.entry_Vent_Pulse.get())
@@ -873,7 +914,7 @@ class Parameter_Window:
                         self.df[self.df['Users'].iloc[i], 'DOOR Recovery Time'] = int(self.entry_Recv_Time.get())
                     if int(self.entry_VRP.get()) >= 150 and int(self.entry_VRP.get()) <= 300:
                         self.df[self.df['Users'].iloc[i], 'DOOR VRP'] = int(self.entry_VRP.get())
-                    if int(self.entry_ARP.get()) in range(150, 301)
+                    if int(self.entry_ARP.get()) in range(150, 301):
                         self.df[self.df['Users'].iloc[i], 'DDDR ARP'] = int(self.entry_ARP.get())
                     if int(self.entry_Sensor_Rate.get()) in range(50, 176):
                         self.df[self.df['Users'].iloc[i], 'DDDR Sensor Rate'] = int(self.entry_Sensor_Rate.get())
@@ -889,6 +930,6 @@ class Parameter_Window:
                         self.df[self.df['Users'].iloc[i], 'DDDRR ATR Fallback Mode'] = int(self.entry_ATR_Fallback_Mode.get())
                     if int(self.entry_ATR_Fallback_time.get()) in range(1, 6):
                         self.df[self.df['Users'].iloc[i], 'DDDRR ATR Fallback Time'] = int(self.entry_ATR_Fallback_time.get())
-
+        except ValueError:
+            Notifiy_Window.Notify_window(8)
     ##save parameters
-
