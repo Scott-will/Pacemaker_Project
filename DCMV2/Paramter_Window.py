@@ -28,15 +28,18 @@ import pickle
 import Login_Screen
 import Pacing_Screen
 import Notifiy_Window
+import Excel_Handling as ex
+import pandas as pd
 
 class Parameter_Window:
-    def __init__(self, master, mode, user):
+    def __init__(self, master, mode, user, df):
         self.frame_root = Frame(master, width=1500, height=500)
         self.frame_root.pack()
         self.mode = mode
         self.user = user
         self.master = master
         self.parameters = self.old_parameters()
+        self.df
 
 
 
@@ -64,7 +67,7 @@ class Parameter_Window:
             self.label_PVARP = Label(self.frame_root, text="PVARP:")
             self.label_PVARP.place(x=80, y=470)
 
-            self.entry_Atr_Amp = Entry(self.frame_root)
+            self.entry_Atr_Amp = Entry(self.frame_root) #self.entry_Atr_Amp, self.entry_Atr_Pulse,
             self.entry_Atr_Amp.place(x=125, y=270)
             self.entry_Atr_Pulse = Entry(self.frame_root)
             self.entry_Atr_Pulse.place(x=125, y=320)
@@ -570,16 +573,16 @@ class Parameter_Window:
 
     def from_Parameter_Window(self):  # Returns to the pacing screen
         self.frame_root.pack_forget()
-        self.PacingWindow = Pacing_Screen.Pacing_Window(self.master, self.user)
+        self.PacingWindow = Pacing_Screen.Pacing_Window(self.master, self.user, self.df)
 
     def To_login(self):
         self.frame_root.pack_forget()
-        self.login = Login_Screen.Login_Window(self.master)
+        self.login = Login_Screen.Login_Window(self.master, self.df)
 
 
     def Apply(self):  # Apply will save the #parameters in the entry fields and return to the pacing screen
         self.frame_root.pack_forget()
-        self.PacingWindow = Pacing_Screen.Pacing_Window(self.master, self.user)
+        self.PacingWindow = Pacing_Screen.Pacing_Window(self.master, self.user, self.df)
         # Add code here to also save the parameters
 
         self.save_parameters()
@@ -588,191 +591,304 @@ class Parameter_Window:
         self.save_parameters()  # Just random code so pycharm doesnt freak out that there is nothing in the function
         # add code here to save the parameters
 
-    def save_parameters(self):  ##saves parameters
-        f = open("Parameters.txt", 'wb')
-        ##check if file is empty,
-        ##order is user, ul, ll, d, w, mode
-        ##so search file to see if user exists (icrement by 6 6)
-        ##if yes change data
-        ##if no add user and data
-        i = 0
-        while True:
-            try:
-                if self.user == self.parameters[i]:  ##if user already has parameters, change them
-                    self.parameters[i + 1] = self.entry_Upperlim.get()
-                    self.parameters[i + 2] = self.entry_Lowerlim.get()
-                    self.parameters[i + 3] = self.entry_Sensor_Rate.get()
-                    self.parameters[i + 4] = self.entry_AV_Delay.get()
-                    self.parameters[i + 5] = self.entry_Dyn_AV_Delay.get()
-                    self.parameters[i + 6] = self.entry_AV_Delay_Off1.get()
-                    self.parameters[i + 7] = self.entry_Atr_Amp.get()
-                    self.parameters[i + 8] = self.entry_Vent_Amp.get()
-                    self.parameters[i + 9] = self.entry_Atr_Pulse.get()
-                    self.parameters[i + 10] = self.entry_Vent_Pulse.get()
-                    self.parameters[i + 11] = self.entry_Vent_Sens.get()
-                    self.parameters[i + 12] = self.entry_Atr_Sens.get()
-                    self.parameters[i + 13] = self.entry_VRP.get()
-                    self.parameters[i + 14] = self.entry_ARP.get()
-                    self.parameters[i + 15] = self.entry_PVARP.get()
-                    self.parameters[i + 16] = self.entry_PVARP_Ext.get()
-                    self.parameters[i + 17] = self.entry_Hyst.get()
-                    self.parameters[i + 18] = self.entry_Rate_Smooth.get()
-                    self.parameters[i + 19] = self.entry_ATR_Dur.get()
-                    self.parameters[i + 20] = self.entry_ATR_Fallback_Mode.get()
-                    self.parameters[i + 21] = self.entry_Act_Thres.get()
-                    self.parameters[i + 22] = self.entry_React_Time.get()
-                    self.parameters[i + 23] = self.entry_Resp_Fact.get()
-                    self.parameters[i + 24] = self.entry_Recv_Time.get()
-                    self.parameters[i + 25] = self.mode
-                    break
-                else:
-                    i = i + 26
-            except EOFError or IndexError:  ##if user not found add them and their data
-                self.parameters.append(self.user)
-                self.parameters.append(self.entry_Upperlim.get())
-                self.parameters.append(self.entry_Lowerlim.get())
-                self.parameters.append(self.entry_Sensor_Rate.get())
-                self.parameters.append(self.entry_AV_Delay.get())
-                self.parameters.append(self.entry_Dyn_AV_Delay.get())
-                self.parameters.append(self.entry_AV_Delay_Off1.get())
-                self.parameters.append(self.entry_Atr_Amp.get())
-                self.parameters.append(self.entry_Vent_Amp.get())
-                self.parameters.append(self.entry_Atr_Pulse.get())
-                self.parameters.append(self.entry_Vent_Pulse.get())
-                self.parameters.append(self.entry_Vent_Sens.get())
-                self.parameters.append(self.entry_Atr_Sens.get())
-                self.parameters.append(self.entry_VRP.get())
-                self.parameters.append(self.entry_ARP.get())
-                self.parameters.append(self.entry_PVARP.get())
-                self.parameters.append(self.entry_PVARP_Ext.get())
-                self.parameters.append(self.entry_Hyst.get())
-                self.parameters.append(self.entry_Rate_Smooth.get())
-                self.parameters.append(self.entry_ATR_Dur.get())
-                self.parameters.append(self.entry_ATR_Fallback_Mode.get())
-                self.parameters.append(self.entry_Act_Thres.get())
-                self.parameters.append(self.entry_React_Time.get())
-                self.parameters.append(self.entry_Resp_Fact.get())
-                self.parameters.append(self.entry_Recv_Time.get())
-                self.parameters.append(self.mode)
-                break
-            except IndexError:  ##here we have the parameters and there bounds, just copy the if statement into the proper location,
-                ## make sure each screen only shows the ones it needs for the desired mode
-                self.parameters.append(self.user)
-                if int(self.entry_Upperlim.get()) < 100 and int(self.entry_Upperlim.get()) > int(
-                        self.entry_Lowerlim.get()):
-                    self.parameters.append(self.entry_Upperlim.get())
-                if int(self.entry_Lowerlim.get()) < int(self.entry_Upperlim.get()) and int(
-                        self.entry_Lowerlim.get()) >= 60:
-                    self.parameters.append(self.entry_Lowerlim.get())
-                # if int(self.entry_Sensor_Rate.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_Sensor_Rate.get()) ##sensor rate range between TBD
-                if int(self.entry_AV_Delay.get()) <= 300 and int(self.entry_AV_Delay.get()) >= 150:
-                    self.parameters.append(self.entry_AV_Delay.get())  ## between 150 - 300 ms
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_Dyn_AV_Delay.get()) ## TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_AV_Delay_Off1.get()) ## TBD
-                if int(self.entry_Atr_Amp.get()) <= 80 and int(self.entry_Atr_Amp.get()) >= 30:
-                    self.parameters.append(self.entry_Atr_Amp.get())  ## between 30 - 80
-                if int(self.entry_Vent_Amp.get()) <= 80 and int(self.entry_Vent_Amp.get()) >= 30:
-                    self.parameters.append(self.entry_Vent_Amp.get())  ## same as atr
-                if int(self.entry_Atr_Pulse.get()) <= 10 and int(self.entry_Atr_Pulse.get()) >= 1:
-                    self.parameters.append(self.entry_Atr_Pulse.get())  ## 1 - 10
-                if int(self.entry_Vent_Pulse.get()) <= 10 and int(self.entry_Vent_Pulse.get()) >= 1:
-                    self.parameters.append(self.entry_Vent_Pulse.get())  ## 1 - 10
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #    self.parameters.append(self.entry_Vent_Sens.get()) ## between TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_Atr_Sens.get()) ## between TBD
-                if int(self.entry_VRP.get()) <= 300 and int(self.entry_VRP.get()) >= 150:
-                    self.parameters.append(self.entry_VRP.get())  ## between 150 - 300ms
-                if int(self.entry_ARP.get()) <= 300 and int(self.entry_ARP.get()) >= 150:
-                    self.parameters.append(self.entry_ARP.get())  ## 150  - 300
-                if int(self.entry_PVARP.get()) <= 300 and int(self.entry_PVARP.get()) >= 150:
-                    self.parameters.append(self.entry_PVARP.get())  ## 150 - 300
-                if int(self.entry_PVARP_Ext.get()) <= 300 and int(self.entry_PVARP_Ext.get()) >= 150:
-                    self.parameters.append(self.entry_PVARP_Ext.get())  ## 150 - 300 (TBD)
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_Hyst.get()) ## baked into the board, not needed
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #    self.parameters.append(self.entry_Rate_Smooth.get()) ## TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_ATR_Dur.get())    ## TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_ATR_Fallback_Mode.get())  ## TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_Act_Thres.get()) ## TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_React_Time.get()) ## TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_Resp_Fact.get()) ## TBD
-                # if int(self.entry_Upperlim.get()) < 120 and int(self.entry_Upperlim.get()) >= 60:
-                #   self.parameters.append(self.entry_Recv_Time.get()) ## TBD
-                self.parameters.append(self.mode)
-                break
-        all_numbers = True
-        for i in range(0, len(self.parameters) - 1):
-            if self.parameters[i].isdigit() == False:
-                all_numbers = False
-        if all_numbers:
-            pickle.dump(self.parameters, f)
-        else:
-            Notifiy_Window.Notify_window(8)
-        f.close()
-
-    def old_parameters(self):  ##gets the old parameters
-        old_parameters = []
+    def save_VOO(self):
         try:
-            f2 = open("Parameters.txt", 'rb')
-            while True:
-                try:
-                    old_parameters = pickle.load(f2)
-                except EOFError:
-                    break
-            f2.close()
-        except IOError:
-            f2 = open("Parameters.txt", 'w+')
-            old_parameters = []
-            f2.close()
-        return old_parameters
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'VOO Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get)
+                        self.df[self.df['Users'].iloc[i], 'VOO Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Vent_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'VOO Pulse Width'] = int(self.entry_Vent_Pulse.get())
+                    if int(self..get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'VOO Ventrical Amplitude'] = int(self.entry_Vent_Amp.get())
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
 
-    def write_parameters(self):
-        i = 0
-        while True:
-            try:
-                if self.user == self.parameters[i]:
-                    if self.mode == self.parameters[i + 25]:
-                        self.entry_Upperlim.insert(10, self.parameters[i + 1])
-                        self.entry_Lowerlim.insert(10, self.parameters[i + 2])
-                        self.entry_Sensor_Rate.insert(10, self.parameters[i + 3])
-                        self.entry_AV_Delay.insert(10, self.parameters[i + 4])
-                        self.entry_Dyn_AV_Delay.insert(10, self.parameters[i + 5])
-                        self.entry_AV_Delay_Off1.insert(10, self.parameters[i + 6])
-                        self.entry_Atr_Amp.insert(10, self.parameters[i + 7])
-                        self.entry_Vent_Amp.insert(10, self.parameters[i + 8])
-                        self.entry_Atr_Pulse.insert(10, self.parameters[i + 9])
-                        self.entry_Vent_Pulse.insert(10, self.parameters[i + 10])
-                        self.entry_Vent_Sens.insert(10, self.parameters[i + 11])
-                        self.entry_Atr_Sens.insert(10, self.parameters[i + 12])
-                        self.entry_VRP.insert(10, self.parameters[i + 13])
-                        self.entry_ARP.insert(10, self.parameters[i + 14])
-                        self.entry_PVARP.insert(10, self.parameters[i + 15])
-                        self.entry_PVARP_Ext.insert(10, self.parameters[i + 16])
-                        self.entry_Hyst.insert(10, self.parameters[i + 17])
-                        self.entry_Rate_Smooth.insert(10, self.parameters[i + 18])
-                        self.entry_ATR_Dur.insert(10, self.parameters[i + 19])
-                        self.entry_ATR_Fallback_Mode.insert(10, self.parameters[i + 20])
-                        self.entry_Act_Thres.insert(10, self.parameters[i + 21])
-                        self.entry_React_Time.insert(10, self.parameters[i + 22])
-                        self.entry_Resp_Fact.insert(10, self.parameters[i + 23])
-                        self.entry_Recv_Time.insert(10, self.parameters[i + 24])
+    def save_AOO(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'AOO Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get)
+                        self.df[self.df['Users'].iloc[i], 'AOO Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Atr_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'AOO Pulse Width'] = int(self.entry_Atr_Pulse.get())
+                    if int(self.entry_Atr_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'AOO Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+        ##LowerRateLimit, upper rate limit, pulse width, atrial amplitude
+        ##save parameter
 
-                        break
-                    else:
-                        break
-                else:
-                    i = i + 26
-            except IndexError:
-                break
-            except TypeError:
-                break
+    def save_VVI(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'VVI Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get())
+                        self.df[self.df['Users'].iloc[i], 'VVI Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Vent_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'VVI Pulse Width'] = int(self.entry_Vent_Pulse.get())
+                    if int(self.entry_Vent_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'VVI Ventrical Amplitude'] = int(self.entry_Vent_Amp.get())
+                    if int(self.entry_Vent_Sens.get()) >= 65 and int(self.entry_Vent_Sens.get()) <= 70:
+                        self.df[self.df['Users'].iloc[i], 'VVI Ventrical Sensitivity'] = int(self.entry_Vent_Sens.get())
+                    if int(self.entry_VRP.get()) >= 150 and int(self.entry_VRP.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'VVI VRP'] = int(self.entry_VRP.get())
+                    if int(self.entry_Rate_Smooth.get()) >= 0 and int(self.entry_Rate_Smooth.get()) <= 100:
+                        self.df[self.df['Users'].iloc[i], 'VVI Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
+
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+
+    def save_AAI(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'AAI Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get())
+                        self.df[self.df['Users'].iloc[i], 'AAI Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Atr_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'AAI Pulse Width'] = int(self.entry_Atr_Pulse.get())
+                    if int(self.entry_Vent_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'AAI Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
+                    if int(self.entry_Atr_Sens.get()) >= 65 and int(self.entry_Atr_Sens.get()) <= 70:
+                        self.df[self.df['Users'].iloc[i], 'AAI Atrial Sensitivity'] = int(self.entry_Atr_Sens.get())
+                    if int(self.entry_ARP.get()) >= 150 and int(self.entry_ARP.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'AAI VRP'] = int(self.entry_ARP.get())
+                    if int(self.entry_Rate_Smooth.get()) >= 0 and int(self.entry_Rate_Smooth.get()) <= 100:
+                        self.df[self.df['Users'].iloc[i], 'AAI Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+
+    def save_DOO(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'DOO Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get())
+                        self.df[self.df['Users'].iloc[i], 'DOO Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Vent_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DOO Ventrical Pulse Width'] = int(self.entry_Vent_Pulse.get())
+                    if int(self.entry_Vent_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'DOO Ventrical Amplitude'] = int(self.entry_Vent_Amp.get())
+                    if int(self.entry_Atr_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'DOO Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
+                    if int(self.entry_Atr_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DOO Atrial Pulse Width'] = int(self.entry_Atr_Pulse.get())
+                    if int(self.entry_AV_del.get()) >= 70 and int(self.entry_AV_del.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'DOO Fixed AV Delay'] = int(self.entry_AV_del.get())
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+        # save parameters
+    def save_AOOR(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'AOOR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get)
+                        self.df[self.df['Users'].iloc[i], 'AOOR Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Atr_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'AOOR Pulse Width'] = int(self.entry_Atr_Pulse.get())
+                    if int(self.entry_Atr_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'AOOR Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
+                    if int(self.entry_Rate_Smooth()) in range(0, 101):
+                        self.df[self.df['Users'].iloc[i], 'AOOR Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
+                    if int(self.entry_Act_Thres.get()) > 10:
+                        self.df[self.df['Users'].iloc[i], 'AOOR Activity Threshold'] = int(self.entry_Act_Thres.get())
+                    if int(self.entry_React_Time.get()) >= 10 and int(self.entry_React_Time.get()) <= 15:
+                        self.df[self.df['Users'].iloc[i], 'AOOR Reaction Time'] = int(self.entry_React_Time.get())
+                    if int(self.entry_Resp_Fact.get()) >= 1 and int(self.entry_Resp_Fact.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'AOOR Response Factor'] = int(self.entry_Resp_Fact.get())
+                    if int(self.entry_Recv_Time.get()) >= 2 and int(self.entry_Recv_Time.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'AOOR Recovery Time'] = int(self.entry_Recv_Time.get())
+
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+        ##save parameters
+
+     def save_AAIR(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'AAIR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get())
+                        self.df[self.df['Users'].iloc[i], 'AAIR Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Atr_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'AAIR Pulse Width'] = int(self.entry_Atr_Pulse.get())
+                    if int(self.entry_Atr_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'AAIR Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
+                    if int(self.entry_Sensor_Rate.get()) >= 65 and int(self.entry_Sensor_Rate.get()) <= 70:
+                        self.df[self.df['Users'].iloc[i], 'AAIR Sensor Rate'] = int(self.entry_Sensor_Rate.get())
+                    if int(self.entry_Atr_Sens.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'AAIR Atrial Sensitivity'] = int(self.entry_Atr_Sens.get())
+                    if int(self.entry_Rate_Smooth()) in range(0, 101):
+                        self.df[self.df['Users'].iloc[i], 'AAIR Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
+                    if int(self.entry_Act_Thres.get()) > 10:
+                        self.df[self.df['Users'].iloc[i], 'AAIR Activity Threshold'] = int(self.entry_Act_Thres.get())
+                    if int(self.entry_React_Time.get()) >= 10 and int(self.entry_React_Time.get()) <= 15:
+                        self.df[self.df['Users'].iloc[i], 'AAIR Reaction Time'] = int(self.entry_React_Time.get())
+                    if int(self.entry_Resp_Fact.get()) >= 1 and int(self.entry_Resp_Fact.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'AAIR Response Factor'] = int(self.entry_Resp_Fact.get())
+                    if int(self.entry_Recv_Time.get()) >= 2 and int(self.entry_Recv_Time.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'AAIR Recovery Time'] = int(self.entry_Recv_Time.get())
+                    if int(self.entry_ARP.get()) >= 150 and int(self.entry_ARP.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'AAIR ARP'] = int(self.entry_ARP.get())
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+        ##save parameters
+    def save_VOOR(self):
+
+
+        ##save parameters
+    def save_VVIR(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'VVIR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get())
+                        self.df[self.df['Users'].iloc[i], 'VVIR Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Vent_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'VVIR Pulse Width'] = int(self.entry_Vent_Pulse.get())
+                    if int(self.entry_Vent_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'VVIR Ventrical Amplitude'] = int(self.entry_Vent_Amp.get())
+                    if int(self.entry_Sensor_Rate.get()) >= 65 and int(self.entry_Sensor_Rate.get()) <= 70:
+                        self.df[self.df['Users'].iloc[i], 'VVIR Sensor Rate'] = int(self.entry_Sensor_Rate.get())
+                    if int(self.entry_Vent_Sens.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'VVIR Ventrical Sensitivity'] = int(self.entry_Vent_Sens.get())
+                    if int(self.entry_Rate_Smooth()) in range(0, 101):
+                        self.df[self.df['Users'].iloc[i], 'VVIR Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
+                    if int(self.entry_Act_Thres.get()) > 10:
+                        self.df[self.df['Users'].iloc[i], 'VVIR Activity Threshold'] = int(self.entry_Act_Thres.get())
+                    if int(self.entry_React_Time.get()) >= 10 and int(self.entry_React_Time.get()) <= 15:
+                        self.df[self.df['Users'].iloc[i], 'VVIR Reaction Time'] = int(self.entry_React_Time.get())
+                    if int(self.entry_Resp_Fact.get()) >= 1 and int(self.entry_Resp_Fact.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'VVIR Response Factor'] = int(self.entry_Resp_Fact.get())
+                    if int(self.entry_Recv_Time.get()) >= 2 and int(self.entry_Recv_Time.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'VVIR Recovery Time'] = int(self.entry_Recv_Time.get())
+                    if int(self.entry_VRP.get()) >= 150 and int(self.entry_VRP.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'VVIR VRP'] = int(self.entry_VRP.get())
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+        ##save parameters
+    def save_DOOR(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get())
+                        self.df[self.df['Users'].iloc[i], 'DOOR Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Vent_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Ventrical Pulse Width'] = int(self.entry_Vent_Pulse.get())
+                    if int(self.entry_Vent_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Ventrical Amplitude'] = int(self.entry_Vent_Amp.get())
+                    if int(self.entry_Atr_Amp.get()) >= 65 and int(self.entry_Atr_Amp.get()) <= 70:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
+                    if int(self.entry_Atr_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Atrial Pulse Width'] = int(self.entry_Atr_Pulse.get())
+                    if int(self.entry_AV_del.get()) >= 70 and int(self.entry_AV_del.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Fixed AV Delay'] = int(self.entry_AV_del.get())
+                    if int(self.entry_Rate_Smooth()) in range(0, 101):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
+                    if int(self.entry_Act_Thres.get()) > 10:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Activity Threshold'] = int(self.entry_Act_Thres.get())
+                    if int(self.entry_React_Time.get()) >= 10 and int(self.entry_React_Time.get()) <= 15:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Reaction Time'] = int(self.entry_React_Time.get())
+                    if int(self.entry_Resp_Fact.get()) >= 1 and int(self.entry_Resp_Fact.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Response Factor'] = int(self.entry_Resp_Fact.get())
+                    if int(self.entry_Recv_Time.get()) >= 2 and int(self.entry_Recv_Time.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Recovery Time'] = int(self.entry_Recv_Time.get())
+                    if int(self.entry_VRP.get()) >= 150 and int(self.entry_VRP.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'DOOR VRP'] = int(self.entry_VRP.get())
+
+            ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
+        except ValueError:
+            Notifiy_Window(8)
+        ##save parameters
+    def save_DDDR(self):
+        try:
+            for i in range(0, 20, 2):
+                if self.user == self.df['Users'].iloc[i]:  ##find user
+                    if int(self.entry_Lowerlim.get()) >= 60 and int(self.entry_Lowerlim.get()) < int(
+                            self.entry_Upperlim.get()):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Lower Rate Limit'] = int(self.entry_Lowerlim.get())
+                    if int(self.entry_Upperlim.get()) <= 120 and int(self.entry_Upperlim.get()) > int(
+                            self.entry_Lowerlim.get())
+                        self.df[self.df['Users'].iloc[i], 'DOOR Upper Rate Limit'] = int(self.entry_UpperLim.get())
+                    if int(self.entry_Vent_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Ventrical Pulse Width'] = int(self.entry_Vent_Pulse.get())
+                    if int(self.entry_Vent_Amp.get()) in range(50, 101):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Ventrical Amplitude'] = int(self.entry_Vent_Amp.get())
+                    if int(self.entry_Atr_Amp.get()) >= 65 and int(self.entry_Atr_Amp.get()) <= 70:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Atrial Amplitude'] = int(self.entry_Atr_Amp.get())
+                    if int(self.entry_Atr_Pulse.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Atrial Pulse Width'] = int(self.entry_Atr_Pulse.get())
+                    if int(self.entry_AV_del.get()) >= 70 and int(self.entry_AV_del.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Fixed AV Delay'] = int(self.entry_AV_del.get())
+                    if int(self.entry_Rate_Smooth()) in range(0, 101):
+                        self.df[self.df['Users'].iloc[i], 'DOOR Rate Smoothing'] = int(self.entry_Rate_Smooth.get())
+                    if int(self.entry_Act_Thres.get()) > 10:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Activity Threshold'] = int(self.entry_Act_Thres.get())
+                    if int(self.entry_React_Time.get()) >= 10 and int(self.entry_React_Time.get()) <= 15:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Reaction Time'] = int(self.entry_React_Time.get())
+                    if int(self.entry_Resp_Fact.get()) >= 1 and int(self.entry_Resp_Fact.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Response Factor'] = int(self.entry_Resp_Fact.get())
+                    if int(self.entry_Recv_Time.get()) >= 2 and int(self.entry_Recv_Time.get()) <= 16:
+                        self.df[self.df['Users'].iloc[i], 'DOOR Recovery Time'] = int(self.entry_Recv_Time.get())
+                    if int(self.entry_VRP.get()) >= 150 and int(self.entry_VRP.get()) <= 300:
+                        self.df[self.df['Users'].iloc[i], 'DOOR VRP'] = int(self.entry_VRP.get())
+                    if int(self.entry_ARP.get()) in range(150, 301)
+                        self.df[self.df['Users'].iloc[i], 'DDDR ARP'] = int(self.entry_ARP.get())
+                    if int(self.entry_Sensor_Rate.get()) in range(50, 176):
+                        self.df[self.df['Users'].iloc[i], 'DDDR Sensor Rate'] = int(self.entry_Sensor_Rate.get())
+                    if int(self.entry_Dyn_AV_Delay.get()) in range(0, 2):
+                        self.df[self.df['Users'].iloc[i], 'DDDR Dynamic AV Delay'] = int(self.entry_Dyn_AV_Delay.get())
+                    if int(self.entry_AV_Delay_Off1.get()) in range(10, 101) or int(self.entry_AV_Delay_Off1.get()) == 0:
+                        self.df[self.df['Users'].iloc[i], 'DDDR Sensed AV Delay Offset'] = int(self.entry_AV_Delay_Off1.get())
+                    if int(self.entry_Vent_Sens.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DDDR Ventrical Sensitivity'] = int(self.entry_Vent_Sens.get())
+                    if int(self.entry_Atr_Sens.get()) in range(1, 11):
+                        self.df[self.df['Users'].iloc[i], 'DDDRR Atrial Sensitivity'] = int(self.entry_Atr_Sens.get())
+                    if int(self.entry_ATR_Fallback_Mode.get()) in range(0, 2):
+                        self.df[self.df['Users'].iloc[i], 'DDDRR ATR Fallback Mode'] = int(self.entry_ATR_Fallback_Mode.get())
+                    if int(self.entry_ATR_Fallback_time.get()) in range(1, 6):
+                        self.df[self.df['Users'].iloc[i], 'DDDRR ATR Fallback Time'] = int(self.entry_ATR_Fallback_time.get())
+
+    ##save parameters
+
