@@ -1,0 +1,25 @@
+class Scom:
+    def __init__(self):
+        from serial import Serial
+        self.s = Serial()
+        self.s.port = 'COM3'
+        self.s.baudrate = 115200
+        self.s.timeout = 0.5
+        self.s.dtr = 0
+
+    def startcom(self):
+        from serial import Serial
+        self.s = Serial()
+        self.s.port = 'COM3'
+        self.s.baudrate = 115200
+        self.s.timeout = 0.5
+        self.s.dtr = 0
+        self.s.open()
+        self.state = self.s.isOpen()
+        return self.state
+    def testSend(self):
+        data = [hex(2)]
+        data.insert(0, hex(55))
+        data.insert(0, hex(16))
+        print(data)
+        serial.write(data)

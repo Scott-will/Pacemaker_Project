@@ -68,7 +68,7 @@ class Scom:
 
 
 class Serial_Window:
-    def __init__(self, master,user, df):
+    def __init__(self, master, user, df):
         self.master = master
         self.user = user
         self.frame_root = Frame(self.master, width=500, height=500)
@@ -120,3 +120,20 @@ class Serial_Window:
     def To_Menu(self):
         self.frame_root.pack_forget()
         self.menu = Menu_Window.menu(self.master, self.user, self.df)
+
+    def SendData(self, data):
+        ##first i send the mode, then parameters, then done note
+        ##hex16 says im writing
+        ##hex55 says read this data
+        ##mode, parameters of size buffer
+        ##send 16, 22 for done.
+        for i in data:
+            serial.write(i)
+        serial.write()
+
+    def testSend(self):
+        data = [hex(2)]
+        data.insert(0, hex(55))
+        data.insert(0, hex(16))
+        print(data)
+        serial.write(data)
