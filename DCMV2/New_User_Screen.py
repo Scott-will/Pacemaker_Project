@@ -26,15 +26,17 @@ from tkinter import *
 import tkinter as tk
 import Login_Screen
 import Notifiy_Window
-
+import pandas as pd
+import Excel_Handling as ex
 
 class New_User_Window:
-    def __init__(self, master, list_of_users):
+    def __init__(self, master, list_of_users, df):
         #frame definition
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
         self.list_of_users = list_of_users
         self.master = master
+        self.df = df
 
         # buttons and text defintions
         self.background_image = tk.PhotoImage(file="backgroundpacing.png")
@@ -71,28 +73,34 @@ class New_User_Window:
         self.LoginScreen = Login_Screen.Login_Window(self.master)
 
     def create_user(self):  # We take the collected username and password and save them
-        username = self.entry_username.get()
+        username = self.entry_username.get()  ##get entries
         password = self.entry_password.get()
         password_confirm = self.entry_password_confirmation.get()
         isnumber_username = False
         isnumber_password = False
-
-        if len(username) > 5:
-            for i in username:
-                if i.isdigit():
-                    isnumber_username = True
-            if len(password) > 5:
+        if pd.isnull(self.df['Username'].iloc[9]):  ##check if less than 10 users
+            if len(username) > 5:  # check if length is greater than 5
                 for i in username:
-                    if i.isdigit():
-                        isnumber_password = True
+                    if i.isdigit():  # check if their is a number in the username
+                        isnumber_username = True
+                if len(password) > 5:  ##check if length greater than 5  and if there is a number
+                    for i in username:
+                        if i.isdigit():
+                            isnumber_password = True
 
-        if isnumber_username and isnumber_password:
-            if password == password_confirm:
-                self.list_of_users = Login_Screen.add_user(self.list_of_users, username, password)
-                list_of_users = Login_Screen.save_users(self.list_of_users)
-                print(list_of_users)
-                self.from_new_user()  ##goes back to login screen
+            if isnumber_username and isnumber_password:  ##if conditions are met and password entries match
+                if password == password_confirm:  ##add user login info
+                    for i in range(0, 20, 2):
+                        if pd.isnull(self.df['Username'].iloc[i]):  ##add to excel file and save
+                            self.df.iat[i, 1] = 1
+                            self.df.iat[i, 2] = 1
+                            self.df.iat[i, 0] = username.encode()
+                            self.df.iat[i + 1, 0] = password.encode()
+                            # self.df.rename(index = {self.df['Users'].iloc[i] : username.encode()})
+                            # self.df.rename(index = {self.df['Users'].iloc[i+1] : password.encode()})
+                            ex.saveDataFrame(self.df)
+                            break
             else:
                 error = Notifiy_Window.Notify_window(4)
         else:
-             Notifiy_Window.Notify_window(3)
+            Notifiy_Window.Notify_window(3)

@@ -25,15 +25,16 @@
 
 from tkinter import*
 import Login_Screen
+import Excel_Handling as ex
 
 root = Tk()  # Created the window where the entire program is run
-
+df = ex.CreateDataFrame()
 # This make it so the users cannot adjust the side of the window, we do this because expanding
 # the window will ruin the background and layout fo the widgets
 root.resizable(0, 0)
 
 # Here we take the window we just created and we place the first frame onto it which is the login frame
-LoginScreen =Login_Screen.Login_Window(root)
+LoginScreen =Login_Screen.Login_Window(root, df)
 
 # Creates a infinite loop that keeps the program from closing
 root.mainloop()

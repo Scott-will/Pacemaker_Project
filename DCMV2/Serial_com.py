@@ -29,6 +29,9 @@ import serial
 import Login_Screen
 import Menu_Window
 import time
+import Excel_Handling as ex
+import pandas as pd
+
 
 
 ################################################
@@ -65,7 +68,7 @@ class Scom:
 
 
 class Serial_Window:
-    def __init__(self, master,user):
+    def __init__(self, master,user, df):
         self.master = master
         self.user = user
         self.frame_root = Frame(self.master, width=500, height=500)
@@ -74,6 +77,7 @@ class Serial_Window:
         self.label = Label(self.frame_root, image=self.background_image)
         self.label.image = self.background_image
         self.label.pack()
+        self.df = df
 
         self.signout_image = tk.PhotoImage(file="signout.png")
         self.button_signout = Button(self.frame_root, image=self.signout_image)
@@ -111,8 +115,8 @@ class Serial_Window:
 
     def from_Serial_Window(self):
         self.frame_root.pack_forget()
-        self.LoginScreen = Login_Screen.Login_Window(self.master)
+        self.LoginScreen = Login_Screen.Login_Window(self.master, self.df)
 
     def To_Menu(self):
         self.frame_root.pack_forget()
-        self.menu = Menu_Window.menu(self.master, self.user)
+        self.menu = Menu_Window.menu(self.master, self.user, self.df)
