@@ -681,6 +681,7 @@ class Parameter_Window:
                        # success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
 
@@ -730,6 +731,7 @@ class Parameter_Window:
 
             if success == True:
                 self.writeParameters()
+                ex.saveDataFrame(self.df)
                 print(self.data)
             else:
                 Notifiy_Window.Notify_window(8)
@@ -788,6 +790,7 @@ class Parameter_Window:
                     #    success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
 
@@ -842,6 +845,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
@@ -890,6 +894,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
@@ -953,6 +958,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
 
@@ -1033,6 +1039,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
@@ -1096,6 +1103,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
 
@@ -1175,6 +1183,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
             ##lower rate limit, upper rate limit, pulsewidth, ventrical amplitude
@@ -1247,6 +1256,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
 
@@ -1362,6 +1372,7 @@ class Parameter_Window:
                      #   success = False
                     if success == True:
                         self.writeParameters()
+                        ex.saveDataFrame(self.df)
                     else:
                         Notifiy_Window.Notify_window(8)
         except ValueError:
