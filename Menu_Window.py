@@ -29,13 +29,15 @@ import Login_Screen
 import Pacing_Screen
 import EGram_Window
 import Serial_com
+import pandas as pd
+import Excel_Handling as ex
 
 
 
 
 
 class menu:
-    def __init__(self, master, user):
+    def __init__(self, master, user, df):
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
         self.background_image = tk.PhotoImage(file="backgroundpacing1.png")
@@ -44,6 +46,7 @@ class menu:
         self.label.pack()
         self.user = user
         self.master = master
+        self.df = df
 
         self.parameter_editor_image = tk.PhotoImage(file="Parametereditor.png")
         self.parameter_editor = Button(self.frame_root, image=self.parameter_editor_image)
@@ -67,16 +70,16 @@ class menu:
 
     def from_menu(self):
         self.frame_root.pack_forget()
-        self.login = Login_Screen.Login_Window(self.master)
+        self.login = Login_Screen.Login_Window(self.master, self.df)
 
     def to_pacing(self):
         self.frame_root.pack_forget()
-        self.pacing = Pacing_Screen.Pacing_Window(self.master, self.user)
+        self.pacing = Pacing_Screen.Pacing_Window(self.master, self.user, self.df)
 
     def to_egram(self):
         self.frame_root.pack_forget()
-        self.egram = EGram_Window.Electrogram(self.master,self.user)
+        self.egram = EGram_Window.Electrogram(self.master,self.user, self.df)
 
     def to_Serialsettings(self):
         self.frame_root.pack_forget()
-        self.settings = Serial_com.Serial_Window(self.master, self.user)
+        self.settings = Serial_com.Serial_Window(self.master, self.user, self.df)

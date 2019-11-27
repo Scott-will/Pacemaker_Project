@@ -22,6 +22,8 @@ import tkinter as tk
 # import serial                 #
 # import Serial_com             #
 # import time                   #
+#import panda as pd             #
+#import Excel_Handling as ex    #
 #################################
 from tkinter import *
 import Notifiy_Window

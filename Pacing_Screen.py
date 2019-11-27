@@ -21,6 +21,8 @@
 # import serial                 #
 # import Serial_com             #
 # import time                   #
+#import panda as pd             #
+#import Excel_Handling as ex    #
 #################################
 
 # Note:
@@ -38,7 +40,7 @@ import Paramter_Window
 
 
 class Pacing_Window:
-    def __init__(self, master, user):
+    def __init__(self, master, user, df):
         self.frame_root = Frame(master, width=500, height=500)
         self.frame_root.pack()
         self.background_image = tk.PhotoImage(file="backgroundpacing.png")
@@ -50,6 +52,7 @@ class Pacing_Window:
         self.text.place(x=270, y=100)
         self.user = user
         self.master = master
+        self.df = df
 
         self.signout_image = tk.PhotoImage(file="signout.png")
         self.button_signout = Button(self.frame_root, image=self.signout_image)
@@ -119,12 +122,12 @@ class Pacing_Window:
 
     def from_Pacing_Window(self):  # Transition function from new user window to the login screen
         self.frame_root.pack_forget()
-        self.LoginScreen = Login_Screen.Login_Window(self.master)
+        self.LoginScreen = Login_Screen.Login_Window(self.master, self.df)
 
     def To_Parameters(self,mode):
         self.frame_root.pack_forget()
-        self.ParameterWindow = Paramter_Window.Parameter_Window(self.master, mode, self.user)
+        self.ParameterWindow = Paramter_Window.Parameter_Window(self.master, mode, self.user, self.df)
 
     def To_Menu(self):
         self.frame_root.pack_forget()
-        self.menu = Menu_Window.menu(self.master,self.user)
+        self.menu = Menu_Window.menu(self.master,self.user, self.df)
