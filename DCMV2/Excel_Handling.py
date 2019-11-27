@@ -72,7 +72,7 @@ def CreateDataFrame():
         sheet.write(0, 21,'AAI Atrial Amplitude', title_style)
         sheet.write(0, 22,'AAI Atrial Sensitivity', title_style)
         sheet.write(0, 23,'AAI ARP', title_style)
-        sheet.write(0, 24,'AAI PVARP', title_style)
+        #sheet.write(0, 24,'AAI PVARP', title_style)
         sheet.write(0, 25,'AAI Rate Smoothing', title_style)
         sheet.write(0, 26,'DOO Lower Rate Limit', title_style)
         sheet.write(0, 27,'DOO Upper Rate Limit', title_style)
